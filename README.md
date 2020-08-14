@@ -1,3 +1,5 @@
+<img src="./doc/images/icon-with-text.png" width="600">
+
 # Spindle3D
 
 A Fiji plugin for the automated measurement of 3D morphological parameters of volumetric images of mitotic spindles.
