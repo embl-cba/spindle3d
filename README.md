@@ -8,7 +8,7 @@ A Fiji plugin for the automated measurement of 3D morphological parameters of vo
   - Not necessary if you already have Fiji on your computer
 - Start Fiji
   - Install the Spindle3D update site [ Help > Update > Manage Update Sites ]
-  - <img src="./doc/images/update-site.png" width="400">
+  - [X] Spindle3D  | https://sites.imagej.net/Spindle3D/ 
 - Restart Fiji
 
 ## Start
