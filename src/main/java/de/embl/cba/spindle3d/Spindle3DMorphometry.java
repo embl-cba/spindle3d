@@ -252,9 +252,11 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 				+( int ) ( measurements.dnaLateralExtend / settings.workingVoxelSize ),
 				+( int ) ( 1.25 * measurements.dnaAxialExtend / settings.workingVoxelSize ) );
 
-		final IntervalView croppedDna = Views.interval( dnaAlignedDna, boxAroundDna );
+		final IntervalView croppedDna = Views.interval( Views.extendBorder( dnaAlignedDna ), boxAroundDna );
 
-		//ImageJFunctions.show( Views.permute( Views.addDimension( croppedDna, 0, 0), 2,3), "cropped DNA" );
+//		ImageJFunctions.show( Views.permute( Views.addDimension( dnaAlignedDna, 0, 0), 2,3), "DNA" );
+
+//		ImageJFunctions.show( Views.permute( Views.addDimension( croppedDna, 0, 0), 2,3), "cropped DNA" );
 
 		return Algorithms.thresholdOtsu( croppedDna );
 	}
@@ -927,14 +929,13 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 				Ellipsoids3DImageSuite.createShortestAxisAlignmentTransform( ellipsoidVectors );
 
 		dnaAlignedTubulin = Utils.copyAsArrayImg(
-				Transforms.createTransformedView( tubulin,
-						rescaledToDnaAlignmentTransform, new NearestNeighborInterpolatorFactory() ) );
+				Transforms.createTransformedView( tubulin, rescaledToDnaAlignmentTransform, new NearestNeighborInterpolatorFactory(), Transforms.BorderExtension.ExtendBorder ) );
 
 		dnaAlignedDna = Utils.copyAsArrayImg(
-				Transforms.createTransformedView( dna, rescaledToDnaAlignmentTransform ) );
+				Transforms.createTransformedView( dna, rescaledToDnaAlignmentTransform, new NearestNeighborInterpolatorFactory(), Transforms.BorderExtension.ExtendBorder ) );
 
 		dnaAlignedInitialDnaMask = Utils.copyAsArrayImg(
-				Transforms.createTransformedView( dnaMask, rescaledToDnaAlignmentTransform ) );
+				Transforms.createTransformedView( dnaMask, rescaledToDnaAlignmentTransform, new NearestNeighborInterpolatorFactory() ) );
 
 		if ( settings.showIntermediateResults )
 			show( dnaAlignedTubulin, "tubulin aligned along DNA shortest axis", Transforms.origin(),

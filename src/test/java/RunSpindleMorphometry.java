@@ -14,7 +14,7 @@ public class RunSpindleMorphometry
 		final Spindle3DCommand< R > command = new Spindle3DCommand<>();
 		command.opService = ij.op();
 
-		command.inputImageFile = new File("/Users/tischer/Downloads/20190827_HighZoom--W0000--P0001-T0285--0001_26.tif");
+		command.inputImageFile = new File("/Users/tischer/Downloads/20200605_HeLa_MCB309_024-1.tif");
 
 		command.outputDirectory = new File( "/Users/tischer/Desktop/kletter" );
 		command.spindleChannelIndexOneBased = 1;
