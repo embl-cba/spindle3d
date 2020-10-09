@@ -8,6 +8,7 @@ import de.embl.cba.tables.Tables;
 import ij.CompositeImage;
 import ij.IJ;
 import ij.ImagePlus;
+import loci.common.DebugTools;
 import net.imagej.ops.OpService;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
@@ -73,6 +74,7 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 
 	public void run()
 	{
+		DebugTools.setRootLevel("OFF"); // Bio-Formats
 		if ( ! ImageSuite3D.isAvailable() ) return;
 		setSettingsFromUI();
 		processFile( inputImageFile );

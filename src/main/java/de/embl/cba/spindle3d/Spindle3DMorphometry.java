@@ -47,6 +47,7 @@ import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.LinAlgHelpers;
+import net.imglib2.util.Pair;
 import net.imglib2.util.Util;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
@@ -155,7 +156,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 //			cropAroundCellCentre( cellCentreMicrometer );
 		}
 
-		measurements.dnaInitialThreshold = determineDnaThreshold();
+		measurements.dnaInitialThreshold = measureDnaInitialThreshold();
 
 		if ( measurements.dnaInitialThreshold < settings.minimalDynamicRange )
 			return Spindle3DMeasurements.ANALYSIS_INTERRUPTED_LOW_DYNAMIC_DNA;
@@ -254,9 +255,9 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		final IntervalView croppedDna = Views.interval( Views.extendBorder( dnaAlignedDna ), boxAroundDna );
 
-//		ImageJFunctions.show( Views.permute( Views.addDimension( dnaAlignedDna, 0, 0), 2,3), "DNA" );
+		ImageJFunctions.show( Views.permute( Views.addDimension( dnaAlignedDna, 0, 0), 2,3), "DNA" );
 
-//		ImageJFunctions.show( Views.permute( Views.addDimension( croppedDna, 0, 0), 2,3), "cropped DNA" );
+		ImageJFunctions.show( Views.permute( Views.addDimension( croppedDna, 0, 0), 2,3), "cropped DNA" );
 
 		return Algorithms.thresholdOtsu( croppedDna );
 	}
@@ -865,7 +866,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 			show( tubulin, "spindle isotropic voxel size", null, workingCalibration, false );
 	}
 
-	public double determineDnaThreshold()
+	public double measureDnaInitialThreshold()
 	{
 		final RandomAccessibleInterval< R > dnaDownscaledToMetaphasePlateWidth =
 				createRescaledArrayImg(
@@ -877,16 +878,16 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 										settings.workingVoxelSize },
 								settings.dnaThresholdResolution ) );
 
-		final double maximumValue = Algorithms.getMaximumValue( dnaDownscaledToMetaphasePlateWidth );
+		//Viewers.showRai3dWithImageJ( dnaDownscaledToMetaphasePlateWidth, "DNA Threshold" );
 
-//		Viewers.showRai3dWithImageJ( dnaDownscaledToMetaphasePlateWidth, "DNA Threshold" );
+		Pair< Double, Double > minMaxValues = Algorithms.getMinMaxValues( dnaDownscaledToMetaphasePlateWidth );
+		Logger.log( "DNA downscaled minimum value: " + minMaxValues.getA()  );
+		Logger.log( "DNA downscaled maximum value: " + minMaxValues.getB()  );
+		Logger.log( "DNA initial threshold factor: " + settings.dnaThresholdFactor );
+		double initialDnaThreshold = ( minMaxValues.getB() - minMaxValues.getA() ) * settings.dnaThresholdFactor + minMaxValues.getA() ;
+		Logger.log( "DNA initial threshold (max-min)*factor + min: " + initialDnaThreshold );
 
-//		Logger.log( "DNA downscaled maximum value: " + maximumValue );
-//		Logger.log( "DNA threshold factor: " + settings.dnaThresholdFactor );
-		double dnaThreshold = maximumValue * settings.dnaThresholdFactor;
-		Logger.log( "DNA initial threshold: " + dnaThreshold );
-
-		return dnaThreshold;
+		return initialDnaThreshold;
 	}
 
 	public RandomAccessibleInterval< BitType > createInitialDnaMask(
