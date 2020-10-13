@@ -101,6 +101,8 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 	public String run( RandomAccessibleInterval<R> raiXYCZ )
 	{
+		Logger.log( "Running Spindle3D " + Spindle3DVersion.VERSION );
+
 		this.raiXYCZ = raiXYCZ;
 
 		objectMeasurements = new HashMap<>();
@@ -109,16 +111,15 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		try
 		{
-			measurements.log = measure();
+			measurements.log += measure();
 		}
 		catch ( Exception e )
 		{
 			e.printStackTrace();
-			measurements.log = "Exception during computation: \n" + e.toString();
+			measurements.log += "Exception during computation: \n" + e.toString();
 		}
 
 		measurements.setObjectMeasurements();
-
 		return measurements.log;
 	}
 
@@ -255,15 +256,14 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		final IntervalView croppedDna = Views.interval( Views.extendBorder( dnaAlignedDna ), boxAroundDna );
 
-		ImageJFunctions.show( Views.permute( Views.addDimension( dnaAlignedDna, 0, 0), 2,3), "DNA" );
+//		ImageJFunctions.show( Views.permute( Views.addDimension( dnaAlignedDna, 0, 0), 2,3), "DNA" );
 
-		ImageJFunctions.show( Views.permute( Views.addDimension( croppedDna, 0, 0), 2,3), "cropped DNA" );
+//		ImageJFunctions.show( Views.permute( Views.addDimension( croppedDna, 0, 0), 2,3), "cropped DNA" );
 
 		return Algorithms.thresholdOtsu( croppedDna );
 	}
 
-	private RandomAccessibleInterval< BitType > openFast(
-			RandomAccessibleInterval< BitType > dnaAlignedSpindleMask )
+	private RandomAccessibleInterval< BitType > openFast( RandomAccessibleInterval< BitType > dnaAlignedSpindleMask )
 	{
 		final RandomAccessibleInterval< BitType > downsampled = Algorithms.createNearestNeighborResampledArrayImg( dnaAlignedSpindleMask, new double[]{ 0.2, 0.2, 0.2 } );
 
@@ -458,26 +458,34 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 			RandomAccessibleInterval< R > dnaAlignedTubulin,
 			RandomAccessibleInterval< BitType > dnaAlignedDnaMask )
 	{
-		final double dnaRadius = measurements.dnaLateralExtend / 2.0 ;
-		final long lateralExtend = (long) ( ( dnaRadius + 1.0 ) / settings.workingVoxelSize );
-		final long axialExtend = (long) ( 1.0 / settings.workingVoxelSize );
+		final double dnaLateralHalfWidth = measurements.dnaLateralExtend / 2.0 ;
+		final double dnaAxialHalfWidth = measurements.dnaAxialExtend / 2.0 ;
+		final long lateralHalfWidth = (long) ( ( dnaLateralHalfWidth + 1.0 ) / settings.workingVoxelSize );
+		final long axialHalfWidth = (long) ( ( dnaAxialHalfWidth + 1.0 ) / settings.workingVoxelSize );
 
 		final FinalInterval interval = FinalInterval.createMinMax(
-				-lateralExtend,
-				-lateralExtend,
-				-axialExtend,
-				lateralExtend,
-				lateralExtend,
-				axialExtend );
+				-lateralHalfWidth,
+				-lateralHalfWidth,
+				-axialHalfWidth,
+				lateralHalfWidth,
+				lateralHalfWidth,
+				axialHalfWidth );
 
-		final Cursor< R > cursor = Views.iterable(
-				Views.interval( dnaAlignedTubulin, interval ) ).cursor();
+		IntervalView< R > spindleThresholdMeasurementRegion = Views.interval( dnaAlignedTubulin, interval );
+
+		if ( settings.showIntermediateResults)
+			show( spindleThresholdMeasurementRegion, "tubulin threshold measurement region", null, workingCalibration, false );
+
+		final Cursor< R > cursor = Views.iterable( spindleThresholdMeasurementRegion ).cursor();
 
 		double[] lateralVoxelPosition = new double[ 3 ];
-		double distSquared = 0;
-		final double minDistSquared = Math.pow( dnaRadius, 2);
-		final double minInsideDistSquared = Math.pow( dnaRadius - 2.0, 2);
-		final double maxDistSquared = Math.pow( dnaRadius + 1.0, 2);
+
+		double distSquared;
+
+		// final double minDistSquared = Math.pow( dnaLateralRadius, 2); we do not need this anymore as wel measure whether the pixel is within DNA Mask
+
+		final double minInsideSpindleDistSquared = Math.pow( dnaLateralHalfWidth - 2.0, 2);
+		final double minInsideCellDistSquared = Math.pow( dnaLateralHalfWidth + 1.0, 2);
 
 		final ArrayList< Double > cytoplasmicTubulinValues = new ArrayList<>();
 		final ArrayList< Double > spindleTubulinValues = new ArrayList<>();
@@ -503,26 +511,36 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 			for ( int d = 0; d < 2; d++ )
 				distSquared += Math.pow( lateralVoxelPosition[ d ] * settings.workingVoxelSize, 2 );
 
-			if ( distSquared < minInsideDistSquared )
+			if ( distSquared < minInsideSpindleDistSquared )
 			{
 				spindleTubulinValues.add( cursor.get().getRealDouble() );
 				continue;
 			}
 
-			if ( distSquared > maxDistSquared ) continue;
-			if ( distSquared < minDistSquared ) continue;
+			if ( distSquared > minInsideCellDistSquared ) continue;
 
 			cytoplasmicTubulinValues.add( cursor.get().getRealDouble() );
 		}
 
-		final double meanCytoplasmic = Utils.mean( cytoplasmicTubulinValues );
-		final double sdev = Utils.sdev( cytoplasmicTubulinValues, meanCytoplasmic );
+		final double meanCytoplasm = Utils.mean( cytoplasmicTubulinValues );
+		final double sdevCytoplasm = Utils.sdev( cytoplasmicTubulinValues, meanCytoplasm );
+		final double meanSpindle = Utils.mean( spindleTubulinValues );
+		final double sdevSpindle = Utils.sdev( spindleTubulinValues, meanSpindle );
+		final double threshold = ( meanCytoplasm + meanSpindle ) / 2;
+		Logger.log( "Tubulin intensity cytoplasm (mean +/- sdev): " + (int) meanCytoplasm + " +/- " + (int) sdevCytoplasm + "; numPixels: " + cytoplasmicTubulinValues.size());
+		Logger.log( "Tubulin intensity spindle (mean +/- sdev): " + (int) meanSpindle + " +/- " + (int) sdevSpindle + "; numPixels: " + spindleTubulinValues.size() );
 
-		final double meanInsideSpindle = Utils.mean( spindleTubulinValues );
+		Logger.log( "Spindle threshold = 0.5 * ( cyto + spindle ): " + threshold );
 
-		final double threshold = ( meanCytoplasmic + meanInsideSpindle ) / 2;
+		measurements.spindleSNR = ( meanSpindle - meanCytoplasm ) / Math.sqrt( sdevCytoplasm * sdevCytoplasm + sdevSpindle * sdevSpindle );
 
-		Logger.log( "Spindle threshold: " + threshold );
+		Logger.log( "Spindle SNR = ( spindle - cyto ) / sqrt( spindle_var + cyto_var ): " + measurements.spindleSNR );
+
+		if ( Double.isNaN( threshold ) )
+		{
+			measurements.log += "Error: Spindle threshold was NaN";
+			throw new RuntimeException( "Spindle threshold was NaN" );
+		}
 
 		return threshold;
 	}
@@ -885,7 +903,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		Logger.log( "DNA downscaled maximum value: " + minMaxValues.getB()  );
 		Logger.log( "DNA initial threshold factor: " + settings.dnaThresholdFactor );
 		double initialDnaThreshold = ( minMaxValues.getB() - minMaxValues.getA() ) * settings.dnaThresholdFactor + minMaxValues.getA() ;
-		Logger.log( "DNA initial threshold (max-min)*factor + min: " + initialDnaThreshold );
+		Logger.log( "DNA initial threshold = (max-min)*factor + min: " + initialDnaThreshold );
 
 		return initialDnaThreshold;
 	}
@@ -1026,7 +1044,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		measurements.dnaLateralExtend = 2.0 * dnaLateralProfileAndRadius.radius;
 
 		final Double threshold = dnaLateralProfileAndRadius.profile.values.get( dnaLateralProfileAndRadius.radiusIndex );
-		Logger.log( "DNA lateral profile threshold " + threshold );
+		Logger.log( "DNA lateral profile threshold: " + threshold );
 
 		return dnaLateralProfileAndRadius;
 	}

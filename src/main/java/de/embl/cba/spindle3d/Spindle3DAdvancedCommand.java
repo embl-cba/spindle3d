@@ -207,7 +207,7 @@ public class Spindle3DAdvancedCommand< R extends RealType< R > > implements Comm
 
 		final File tableOutputFile = new File( getOutputDirectory() + "measurements.txt" );
 
-		Logger.log( "Saving " + tableOutputFile );
+		Logger.log( "Saving:\n" + tableOutputFile );
 
 		Tables.saveTable( jTable, tableOutputFile );
 	}
@@ -235,7 +235,7 @@ public class Spindle3DAdvancedCommand< R extends RealType< R > > implements Comm
 
 		addImagePathToMeasurements( parentPath, outputImageFile, objectMeasurements, "Path_OutputImage" );
 
-		Logger.log( "Saving: " + outputImageFile );
+		Logger.log( "Saving:\n" + outputImageFile );
 		IJ.saveAs( imagePlus, "ZIP", outputImageFile.toString() );
 	}
 

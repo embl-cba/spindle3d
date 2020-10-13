@@ -14,12 +14,13 @@ public class RunSpindleMorphometry
 		final Spindle3DCommand< R > command = new Spindle3DCommand<>();
 		command.opService = ij.op();
 
-		command.inputImageFile = new File("/Users/tischer/Downloads/20200826_R1E309_TubGFP_SiRDNA__PFAGA_NoMounting_014-2.tif");
+		command.inputImageFile = new File("/Users/tischer/Downloads/20200826_HeLa309_TubGFP_Hoechst__PFAGA_YesMounting_005-1.tif");
 
 		command.outputDirectory = new File( "/Users/tischer/Desktop/kletter" );
-		command.spindleChannelIndexOneBased = 1;
-		command.dnaChannelIndexOneBased = 2;
+		command.spindleChannelIndexOneBased = 2;  // normally 1
+		command.dnaChannelIndexOneBased = 1; // normally 2
 		command.showIntermediateResults = false;
+		command.saveResults = true;
 		command.run();
 	}
 }

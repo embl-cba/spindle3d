@@ -39,13 +39,14 @@ public class Spindle3DMeasurements
 	public Double spindlePoleARefinementDistance = Double.NaN;
 	public Double spindlePoleBRefinementDistance = Double.NaN;
 	public Double spindleThreshold = Double.NaN;
+	public Double spindleSNR = Double.NaN;
 	public Double spindleVolume = Double.NaN;
 	public Double spindleWidthMin = Double.NaN;
 	public Double spindleWidthMax = Double.NaN;
 	public Double dnaCenterToSpindleCenterDistance = Double.NaN;
 	public Double angleSpindleAxisToCoverslipPlaneInDegrees = Double.NaN;
 	public Double dnaVolumeThreshold = Double.NaN;
-	public String log = ANALYSIS_FINISHED;
+	public String log = "";
 	public Double dnaInitialThreshold = Double.NaN;
 	public String version;
 	public Double spindleCoefficientOfVariation = Double.NaN;
@@ -58,7 +59,6 @@ public class Spindle3DMeasurements
 		this.objectMeasurements = objectMeasurements;
 	}
 
-
 	public void setObjectMeasurements( )
 	{
 		addMeasurement( "Version", version );
@@ -67,35 +67,23 @@ public class Spindle3DMeasurements
 
 		addMeasurement( "DNA_Volume_Threshold", dnaVolumeThreshold );
 
-		addMeasurement(
-				DNA_AXIAL_EXTEND + SEP + LENGTH_UNIT,
-				dnaAxialExtend );
+		addMeasurement( DNA_AXIAL_EXTEND + SEP + LENGTH_UNIT, dnaAxialExtend );
 
-		addMeasurement(
-				Spindle3DMeasurements.DNA_LATERAL_EXTEND + SEP + Spindle3DMeasurements.LENGTH_UNIT,
-				dnaLateralExtend );
+		addMeasurement( Spindle3DMeasurements.DNA_LATERAL_EXTEND + SEP + Spindle3DMeasurements.LENGTH_UNIT, dnaLateralExtend );
 
-		addMeasurement(
-				Spindle3DMeasurements.DNA_VOLUME + SEP + Spindle3DMeasurements.VOLUME_UNIT,
-				dnaVolumeCalibrated );
+		addMeasurement( Spindle3DMeasurements.DNA_VOLUME + SEP + Spindle3DMeasurements.VOLUME_UNIT, dnaVolumeCalibrated );
 
-		addMeasurement(
-				Spindle3DMeasurements.DNA_RELATIVE_CENTRAL_INTENSITY,
-				dnaRelativeCentralIntensity );
+		addMeasurement( Spindle3DMeasurements.DNA_RELATIVE_CENTRAL_INTENSITY, dnaRelativeCentralIntensity );
 
-		addMeasurement(
-				SPINDLE_POLE_REFINEMENT_DISTANCE + SEP
-						+ "PoleA" + SEP + Spindle3DMeasurements.LENGTH_UNIT,
-				spindlePoleARefinementDistance );
+		addMeasurement( SPINDLE_POLE_REFINEMENT_DISTANCE + SEP + "PoleA" + SEP + Spindle3DMeasurements.LENGTH_UNIT, spindlePoleARefinementDistance );
 
-		addMeasurement(
-				SPINDLE_POLE_REFINEMENT_DISTANCE + SEP
-						+ "PoleB" + SEP + Spindle3DMeasurements.LENGTH_UNIT,
-				spindlePoleBRefinementDistance );
+		addMeasurement( SPINDLE_POLE_REFINEMENT_DISTANCE + SEP + "PoleB" + SEP + Spindle3DMeasurements.LENGTH_UNIT, spindlePoleBRefinementDistance );
 
 		addMeasurement( getSpindleLengthKey(), spindleAxialExtend );
 
 		addMeasurement( "Spindle_Intensity_Threshold",  spindleThreshold );
+
+		addMeasurement( "Spindle_SNR",  spindleSNR );
 
 		addMeasurement( getSpindleVolumeKey(), spindleVolume );
 
@@ -103,27 +91,15 @@ public class Spindle3DMeasurements
 
 		addMeasurement( Spindle3DMeasurements.getSpindleWidthMaxKey(), spindleWidthMax );
 
-		addMeasurement(
-				Spindle3DMeasurements.DNA_SPINDLE_CENTER_DISTANCE + SEP + Spindle3DMeasurements.LENGTH_UNIT,
-				dnaCenterToSpindleCenterDistance );
+		addMeasurement( Spindle3DMeasurements.DNA_SPINDLE_CENTER_DISTANCE + SEP + Spindle3DMeasurements.LENGTH_UNIT, dnaCenterToSpindleCenterDistance );
 
-		addMeasurement(
-				Spindle3DMeasurements.SPINDLE_AXIS_TO_COVERSLIP_PLANE_ANGLE_DEGREES,
-				angleSpindleAxisToCoverslipPlaneInDegrees );
+		addMeasurement( Spindle3DMeasurements.SPINDLE_AXIS_TO_COVERSLIP_PLANE_ANGLE_DEGREES, angleSpindleAxisToCoverslipPlaneInDegrees );
 
-		addMeasurement(
-				SPINDLE_TUBULIN_COV,
-				spindleCoefficientOfVariation );
+		addMeasurement( SPINDLE_TUBULIN_COV, spindleCoefficientOfVariation );
 
-		addMeasurement(
-				SPINDLE_TUBULIN_SUM,
-				spindleSum );
+		addMeasurement( SPINDLE_TUBULIN_SUM, spindleSum );
 
-		Measurements.addMeasurement(
-				objectMeasurements,
-				0,
-				COMMENT,
-				log );
+		addMeasurement( COMMENT, log );
 	}
 
 	public static String getSpindleLengthKey()

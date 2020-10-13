@@ -119,11 +119,6 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 		final String log = morphometry.run( raiXYCZ );
 		Logger.log( log );
 
-		final Spindle3DMeasurements measurements =
-				morphometry.getMeasurements();
-
-		//spindleVolume = measurements.spindleVolume;
-
 		objectMeasurements = morphometry.getObjectMeasurements();
 
 		addImagePathToMeasurements(
@@ -177,7 +172,7 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 
 		final File tableOutputFile = new File( getOutputDirectory() + "measurements.txt" );
 
-		Logger.log( "Saving " + tableOutputFile );
+		Logger.log( "Saving:\n" + tableOutputFile );
 
 		Tables.saveTable( jTable, tableOutputFile );
 	}
@@ -205,7 +200,7 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 
 		addImagePathToMeasurements( parentPath, outputImageFile, objectMeasurements, "Path_OutputImage" );
 
-		Logger.log( "Saving: " + outputImageFile );
+		Logger.log( "Saving:\n" + outputImageFile );
 		IJ.saveAs( imagePlus, "ZIP", outputImageFile.toString() );
 	}
 
