@@ -17,6 +17,7 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.measure.Calibration;
 
+import inra.ijpb.algo.Algo;
 import net.imagej.ops.OpService;
 import net.imglib2.*;
 import net.imglib2.RandomAccess;
@@ -526,15 +527,17 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		final double sdevCytoplasm = Utils.sdev( cytoplasmicTubulinValues, meanCytoplasm );
 		final double meanSpindle = Utils.mean( spindleTubulinValues );
 		final double sdevSpindle = Utils.sdev( spindleTubulinValues, meanSpindle );
-		final double threshold = ( meanCytoplasm + meanSpindle ) / 2;
 		Logger.log( "Tubulin intensity cytoplasm (mean +/- sdev): " + (int) meanCytoplasm + " +/- " + (int) sdevCytoplasm + "; numPixels: " + cytoplasmicTubulinValues.size());
 		Logger.log( "Tubulin intensity spindle (mean +/- sdev): " + (int) meanSpindle + " +/- " + (int) sdevSpindle + "; numPixels: " + spindleTubulinValues.size() );
 
-		Logger.log( "Spindle threshold = 0.5 * ( cyto + spindle ): " + threshold );
+
+		final double threshold = settings.spindleThresholdFactor * ( meanSpindle - meanCytoplasm ) + meanCytoplasm;
+
+		Logger.log( "Spindle threshold = factor * ( <spindle> - <cyto> ) + <cyto>: " + threshold );
 
 		measurements.spindleSNR = ( meanSpindle - meanCytoplasm ) / Math.sqrt( sdevCytoplasm * sdevCytoplasm + sdevSpindle * sdevSpindle );
 
-		Logger.log( "Spindle SNR = ( spindle - cyto ) / sqrt( spindle_var + cyto_var ): " + measurements.spindleSNR );
+		Logger.log( "Spindle SNR = ( <spindle> - <cyto> ) / sqrt( var(spindle) + var(cyto) ): " + measurements.spindleSNR );
 
 		if ( Double.isNaN( threshold ) )
 		{
@@ -1065,7 +1068,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		final double distance = LinAlgHelpers.distance( spindlePoles.get( 0 ), spindlePoles.get( 1 ) );
 		System.out.println("[DEBUG] Spindle_length: " + distance);
 
-		final ArrayList< double[] > refinedSpindlePoles = refineSpindlePoles( dnaAlignedTubulin, spindlePoles, settings.axialPoleRefinementRadius, settings.lateralPoleRefinementRadius );
+		final ArrayList< double[] > refinedSpindlePoles = refineSpindlePoles( dnaAlignedTubulin, dnaAlignedSpindleMask, spindlePoles, settings.axialPoleRefinementRadius, settings.lateralPoleRefinementRadius );
 
 		final double distanceRefined = LinAlgHelpers.distance( refinedSpindlePoles.get( 0 ), refinedSpindlePoles.get( 1 ) );
 		System.out.println("[DEBUG] Refined Spindle_length: " + distanceRefined);
@@ -1204,12 +1207,14 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 	 * Refine spindle pole positions
 	 *
 	 * @param dnaAlignedTubulin
+	 * @param dnaAlignedSpindleMask
 	 * @param dnaAlignedSpindlePoles
 	 * @param lateralPoleRefinementRadius
 	 * @return
 	 */
 	private ArrayList< double[] > refineSpindlePoles(
 			final RandomAccessibleInterval< R > dnaAlignedTubulin,
+			RandomAccessibleInterval< BitType > dnaAlignedSpindleMask,
 			final ArrayList< double[] > dnaAlignedSpindlePoles,
 			double axialPoleRefinementRadius,
 			double lateralPoleRefinementRadius )
@@ -1228,20 +1233,22 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 				( long ) ( 2.0 * axialPoleRefinementRadius / settings.workingVoxelSize )
 		}, false );
 
-		final RandomAccessible< Neighborhood < R > > neighborhoodsAccessible = rectangleShape2.neighborhoodsRandomAccessible( blurred );
 
-		final RandomAccess< Neighborhood< R > > access = neighborhoodsAccessible.randomAccess();
+		final RandomAccessible< Neighborhood < R > > neighborhoodsAccessible = rectangleShape2.neighborhoodsRandomAccessible( blurred );
+		final RandomAccess< Neighborhood< R > > blurredTubulinAccess = neighborhoodsAccessible.randomAccess();
+
 
 		final ArrayList< double[] > spindlePoles = new ArrayList<>();
 
 		for ( int pole = 0; pole < 2; pole++ )
 		{
 			final long[] pixelUnitsPolePosition = getPixelUnitsPolePosition( dnaAlignedSpindlePoles, pole );
-			access.setPosition( pixelUnitsPolePosition );
-			final Neighborhood< R > neighborhood = access.get();
+			blurredTubulinAccess.setPosition( pixelUnitsPolePosition );
+			final Neighborhood< R > blurredTubulinNeighborhood = blurredTubulinAccess.get();
 
-			final RealPoint maximumLocation = Algorithms.getMaximumLocation(
-					neighborhood,
+			final RealPoint maximumLocation = Spindle3DAlgorithms.getMaximumLocationWithinMask(
+					blurredTubulinNeighborhood,
+					dnaAlignedSpindleMask,
 					Utils.as3dDoubleArray( settings.workingVoxelSize ) );
 
 			spindlePoles.add( new double[]{

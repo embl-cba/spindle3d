@@ -49,6 +49,7 @@ public class Spindle3DSettings<T extends RealType<T> & NativeType< T > >
 	public boolean useCATS = false;
 	public File classifier;
 	public CellCenterDetectionMethod cellCenterDetectionMethod;
+	public double spindleThresholdFactor = 1.0;
 
 	public enum CellCenterDetectionMethod
 	{
@@ -70,6 +71,7 @@ public class Spindle3DSettings<T extends RealType<T> & NativeType< T > >
 		settings += "workingVoxelSize: " + workingVoxelSize + "\n";
 		settings += "dnaThresholdResolution: " + dnaThresholdResolution + "\n";
 		settings += "dnaThresholdFactor: " + dnaThresholdFactor + "\n";
+		settings += "spindleThresholdFactor: " + spindleThresholdFactor + "\n";
 		settings += "spindleDerivativeDelta: " + spindleDerivativeDelta + "\n";
 		settings += "minimalDynamicRange: " + minimalDynamicRange + "\n";
 		settings += "minimalDnaFragmentsVolume: " + minimalDnaFragmentsVolume + "\n";
