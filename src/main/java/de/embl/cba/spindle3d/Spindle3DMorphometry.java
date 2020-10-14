@@ -183,10 +183,15 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		measurements.spindleThreshold = measureSpindleThresholdAtDNAPeriphery( dnaAlignedTubulin, dnaAlignedDnaMask );
 
+		if ( measurements.spindleThreshold < settings.minimalDynamicRange )
+			return Spindle3DMeasurements.ANALYSIS_INTERRUPTED_LOW_DYNAMIC_TUBULIN;
+
 		dnaAlignedSpindleMask = createSpindleMask( dnaAlignedTubulin, measurements.spindleThreshold );
 
-		// optional step to smoothen out the spindle outline
-		//openFast( dnaAlignedSpindleMask );
+		// optional: dilate to compensate a potentially too high spindle threshold
+
+		// optional: smoothen out the spindle outline
+		openFast( dnaAlignedSpindleMask );
 
 		if ( settings.showIntermediateResults )
 			show( dnaAlignedSpindleMask,
@@ -212,12 +217,8 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		dnaAlignedToSpindleAlignedTransform = createSpindlePolesAlignedImages( dnaAlignedSpindlePoles, dnaAlignedSpindleCenter );
 
-		if ( measurements.spindleThreshold < settings.minimalDynamicRange )
-			return Spindle3DMeasurements.ANALYSIS_INTERRUPTED_LOW_DYNAMIC_TUBULIN;
-
-		spindleAlignedSpindleMask = createSpindleMask(
-				spindleAlignedTublin,
-				measurements.spindleThreshold );
+		// TODO: Why do we recompute this here instead of rotating above dnaAlignedSpindleMask?
+		//spindleAlignedSpindleMask = createSpindleMask( spindleAlignedTublin, measurements.spindleThreshold );
 
 		measureSpindleVolume( spindleAlignedSpindleMask );
 
@@ -264,7 +265,8 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		return Algorithms.thresholdOtsu( croppedDna );
 	}
 
-	private RandomAccessibleInterval< BitType > openFast( RandomAccessibleInterval< BitType > dnaAlignedSpindleMask )
+	// TODO: move to Algorithms
+	public static RandomAccessibleInterval< BitType > openFast( RandomAccessibleInterval< BitType > dnaAlignedSpindleMask )
 	{
 		final RandomAccessibleInterval< BitType > downsampled = Algorithms.createNearestNeighborResampledArrayImg( dnaAlignedSpindleMask, new double[]{ 0.2, 0.2, 0.2 } );
 
@@ -477,21 +479,18 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		if ( settings.showIntermediateResults)
 			show( spindleThresholdMeasurementRegion, "tubulin threshold measurement region", null, workingCalibration, false );
 
-		final Cursor< R > cursor = Views.iterable( spindleThresholdMeasurementRegion ).cursor();
-
-		double[] lateralVoxelPosition = new double[ 3 ];
-
-		double distSquared;
-
-		// final double minDistSquared = Math.pow( dnaLateralRadius, 2); we do not need this anymore as wel measure whether the pixel is within DNA Mask
 
 		final double minInsideSpindleDistSquared = Math.pow( dnaLateralHalfWidth - 2.0, 2);
-		final double minInsideCellDistSquared = Math.pow( dnaLateralHalfWidth + 1.0, 2);
+		final double minInsideCellDistSquared = Math.pow( dnaLateralHalfWidth, 2);
 
 		final ArrayList< Double > cytoplasmicTubulinValues = new ArrayList<>();
 		final ArrayList< Double > spindleTubulinValues = new ArrayList<>();
 
 		final RandomAccess< BitType > dnaAlignedDnaMaskAccess = dnaAlignedDnaMask.randomAccess();
+
+		final Cursor< R > cursor = Views.iterable( spindleThresholdMeasurementRegion ).cursor();
+		int[] position = new int[ 3 ];
+		double lateralDistSquared;
 
 		while( cursor.hasNext() )
 		{
@@ -506,31 +505,41 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 				continue;
 			}
 
-			cursor.localize( lateralVoxelPosition );
+			cursor.localize( position );
 
-			distSquared = 0;
+			// we only compute the lateral distance
+			// that is, the distance to the spindle axis
+			lateralDistSquared = 0;
 			for ( int d = 0; d < 2; d++ )
-				distSquared += Math.pow( lateralVoxelPosition[ d ] * settings.workingVoxelSize, 2 );
+				lateralDistSquared += Math.pow( position[ d ] * settings.workingVoxelSize, 2 );
 
-			if ( distSquared < minInsideSpindleDistSquared )
+			if ( lateralDistSquared < minInsideSpindleDistSquared )
 			{
 				spindleTubulinValues.add( cursor.get().getRealDouble() );
 				continue;
 			}
 
-			if ( distSquared > minInsideCellDistSquared ) continue;
+			if ( lateralDistSquared > minInsideCellDistSquared ) continue;
 
 			cytoplasmicTubulinValues.add( cursor.get().getRealDouble() );
 		}
 
+
+		final double medianCytoplasm = Utils.median( cytoplasmicTubulinValues );
+		final double madCytoplasm = Utils.mad( cytoplasmicTubulinValues, medianCytoplasm );
 		final double meanCytoplasm = Utils.mean( cytoplasmicTubulinValues );
 		final double sdevCytoplasm = Utils.sdev( cytoplasmicTubulinValues, meanCytoplasm );
 		final double meanSpindle = Utils.mean( spindleTubulinValues );
 		final double sdevSpindle = Utils.sdev( spindleTubulinValues, meanSpindle );
+
+		// Note: sdev = 1.25 * mad => to get similar thresholds we have to go a bit higher with the mad
+		Logger.log( "Tubulin intensity cytoplasm (median +/- mad): " + medianCytoplasm + " +/- " + madCytoplasm );
 		Logger.log( "Tubulin intensity cytoplasm (mean +/- sdev): " + (int) meanCytoplasm + " +/- " + (int) sdevCytoplasm + "; numPixels: " + cytoplasmicTubulinValues.size());
+		Logger.log( "Tubulin intensity cytoplasm based threshold (median + 2 * mad): " + (int) ( medianCytoplasm + 2 * madCytoplasm ) );
+		Logger.log( "Tubulin intensity cytoplasm based threshold (median + 3 * mad): " + (int) ( medianCytoplasm + 3 * madCytoplasm ) );
+		Logger.log( "Tubulin intensity cytoplasm based threshold (median + 4 * mad): " + (int) ( medianCytoplasm + 4 * madCytoplasm ) );
+		Logger.log( "Tubulin intensity cytoplasm based threshold (median + 5 * mad): " + (int) ( medianCytoplasm + 5 * madCytoplasm ) );
 		Logger.log( "Tubulin intensity spindle (mean +/- sdev): " + (int) meanSpindle + " +/- " + (int) sdevSpindle + "; numPixels: " + spindleTubulinValues.size() );
-
-
 		final double threshold = settings.spindleThresholdFactor * ( meanSpindle - meanCytoplasm ) + meanCytoplasm;
 
 		Logger.log( "Spindle threshold = factor * ( <spindle> - <cyto> ) + <cyto>: " + threshold );
@@ -602,6 +611,8 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		spindleAlignedTublin = Transforms.createTransformedView( dnaAlignedTubulin, dnaAlignedToSpindleAlignedTransform );
 		spindleAlignedDna = Transforms.createTransformedView( dnaAlignedDna, dnaAlignedToSpindleAlignedTransform );
 		spindleAlignedDnaMask = Transforms.createTransformedView( dnaAlignedInitialDnaMask, dnaAlignedToSpindleAlignedTransform, new NearestNeighborInterpolatorFactory() );
+		spindleAlignedSpindleMask = Transforms.createTransformedView( dnaAlignedSpindleMask, dnaAlignedToSpindleAlignedTransform, new NearestNeighborInterpolatorFactory() );
+
 
 		spindleAlignedSpindlePoles = new ArrayList<>();
 		for ( int i = 0; i < 2; i++ )
@@ -1293,7 +1304,6 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		return maskFromLabelRegions;
 	}
 
-
 	private RandomAccessibleInterval< BitType > createSpindleMask(
 			RandomAccessibleInterval< R > tubulin,
 			double spindleThreshold )
@@ -1313,6 +1323,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 				Regions.asMask( centralRegions,
 						Intervals.dimensionsAsLongArray( mask ),
 						Intervals.minAsLongArray( mask ));
+
 
 		return centralRegionsMask;
 	}
