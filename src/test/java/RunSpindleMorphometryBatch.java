@@ -20,6 +20,7 @@ public class RunSpindleMorphometryBatch
 
 		for ( File file : fileList )
 		{
+			if ( ! file.getName().endsWith( ".tif" ) ) continue;
 			command.inputImageFile = file;
 			command.outputDirectory = new File( "/Users/tischer/Desktop/kletter" );
 			command.spindleChannelIndexOneBased = 2;  // normally 1

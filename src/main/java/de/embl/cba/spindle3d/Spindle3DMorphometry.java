@@ -17,7 +17,6 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.measure.Calibration;
 
-import inra.ijpb.algo.Algo;
 import net.imagej.ops.OpService;
 import net.imglib2.*;
 import net.imglib2.RandomAccess;
@@ -27,8 +26,7 @@ import net.imglib2.algorithm.neighborhood.HyperSphereShape;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
 import net.imglib2.algorithm.neighborhood.Shape;
 import net.imglib2.converter.Converters;
-import net.imglib2.img.array.ArrayImgFactory;
-import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.img.array.*;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.interpolation.randomaccess.ClampingNLinearInterpolatorFactory;
 import net.imglib2.interpolation.randomaccess.NLinearInterpolatorFactory;
@@ -181,7 +179,8 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		measureDnaHole( dnaLateralProfileAndRadius );
 
-		measurements.spindleThreshold = measureSpindleThresholdAtDNAPeriphery( dnaAlignedTubulin, dnaAlignedDnaMask );
+		//measurements.spindleThreshold = measureSpindleThresholdOLD( dnaAlignedTubulin, dnaAlignedDnaMask );
+		measurements.spindleThreshold = measureSpindleThreshold( dnaAlignedTubulin, dnaAlignedDnaMask );
 
 		if ( measurements.spindleThreshold < settings.minimalDynamicRange )
 			return Spindle3DMeasurements.ANALYSIS_INTERRUPTED_LOW_DYNAMIC_TUBULIN;
@@ -457,10 +456,13 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 	 * @param dnaAlignedDnaMask
 	 * @return
 	 */
-	public double measureSpindleThresholdAtDNAPeriphery(
+	@Deprecated
+	public double measureSpindleThresholdOLD(
 			RandomAccessibleInterval< R > dnaAlignedTubulin,
 			RandomAccessibleInterval< BitType > dnaAlignedDnaMask )
 	{
+		RandomAccessibleInterval< BitType > dilateDnaMask = Algorithms.dilate( dnaAlignedDnaMask, 1 );
+
 		final double dnaLateralHalfWidth = measurements.dnaLateralExtend / 2.0 ;
 		final double dnaAxialHalfWidth = measurements.dnaAxialExtend / 2.0 ;
 		final long lateralHalfWidth = (long) ( ( dnaLateralHalfWidth + 1.0 ) / settings.workingVoxelSize );
@@ -524,6 +526,128 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 			cytoplasmicTubulinValues.add( cursor.get().getRealDouble() );
 		}
 
+		final double medianCytoplasm = Utils.median( cytoplasmicTubulinValues );
+		final double madCytoplasm = Utils.mad( cytoplasmicTubulinValues, medianCytoplasm );
+		final double meanCytoplasm = Utils.mean( cytoplasmicTubulinValues );
+		final double sdevCytoplasm = Utils.sdev( cytoplasmicTubulinValues, meanCytoplasm );
+		final double meanSpindle = Utils.mean( spindleTubulinValues );
+		final double sdevSpindle = Utils.sdev( spindleTubulinValues, meanSpindle );
+
+		// Note: sdev = 1.25 * mad => to get similar thresholds we have to go a bit higher with the mad
+		Logger.log( "Tubulin intensity cytoplasm (median +/- mad): " + medianCytoplasm + " +/- " + madCytoplasm );
+		Logger.log( "Tubulin intensity cytoplasm (mean +/- sdev): " + (int) meanCytoplasm + " +/- " + (int) sdevCytoplasm + "; numPixels: " + cytoplasmicTubulinValues.size());
+		Logger.log( "Tubulin intensity cytoplasm based threshold (median + 2 * mad): " + (int) ( medianCytoplasm + 2 * madCytoplasm ) );
+		Logger.log( "Tubulin intensity cytoplasm based threshold (median + 3 * mad): " + (int) ( medianCytoplasm + 3 * madCytoplasm ) );
+		Logger.log( "Tubulin intensity cytoplasm based threshold (median + 4 * mad): " + (int) ( medianCytoplasm + 4 * madCytoplasm ) );
+		Logger.log( "Tubulin intensity cytoplasm based threshold (median + 5 * mad): " + (int) ( medianCytoplasm + 5 * madCytoplasm ) );
+		Logger.log( "Tubulin intensity spindle (mean +/- sdev): " + (int) meanSpindle + " +/- " + (int) sdevSpindle + "; numPixels: " + spindleTubulinValues.size() );
+
+//		final double threshold = settings.spindleThresholdFactor * ( meanSpindle - meanCytoplasm ) + meanCytoplasm;
+
+		final double threshold = medianCytoplasm + 5 * madCytoplasm;
+		Logger.log( "Spindle threshold = median + 5 * mad: " + threshold );
+
+		measurements.spindleSNR = ( meanSpindle - meanCytoplasm ) / Math.sqrt( sdevCytoplasm * sdevCytoplasm + sdevSpindle * sdevSpindle );
+
+		Logger.log( "Spindle SNR = ( <spindle> - <cyto> ) / sqrt( var(spindle) + var(cyto) ): " + measurements.spindleSNR );
+
+		if ( Double.isNaN( threshold ) )
+		{
+			measurements.log += "Error: Spindle threshold was NaN";
+			throw new RuntimeException( "Spindle threshold was NaN" );
+		}
+
+		return threshold;
+	}
+
+
+	/**
+	 *
+	 * @param dnaAlignedTubulin
+	 * @param dnaAlignedDnaMask
+	 * @return
+	 */
+	public double measureSpindleThreshold(
+			RandomAccessibleInterval< R > dnaAlignedTubulin,
+			RandomAccessibleInterval< BitType > dnaAlignedDnaMask )
+	{
+		// Create an interval that full encloses the DNA
+		final double dnaLateralHalfWidth = measurements.dnaLateralExtend / 2.0 ;
+		final double dnaAxialHalfWidth = measurements.dnaAxialExtend / 2.0 ;
+		final long lateralHalfWidth = (long) ( ( dnaLateralHalfWidth + 2.0 ) / settings.workingVoxelSize );
+		final long axialHalfWidth = (long) ( ( dnaAxialHalfWidth + 2.0 ) / settings.workingVoxelSize );
+
+		final FinalInterval dnaEnclosingInterval = FinalInterval.createMinMax(
+				-lateralHalfWidth,
+				-lateralHalfWidth,
+				-axialHalfWidth,
+				lateralHalfWidth,
+				lateralHalfWidth,
+				axialHalfWidth );
+
+		IntervalView< R > tubulinCrop = Views.interval( dnaAlignedTubulin, dnaEnclosingInterval );
+
+		if ( settings.showIntermediateResults)
+			show( tubulinCrop, "tubulin threshold measurement region", null, workingCalibration, false );
+
+		final double maxInsideSpindleDistSquared = Math.pow( dnaLateralHalfWidth - 2.0, 2);
+
+		final ArrayList< Double > cytoplasmicTubulinValues = new ArrayList<>();
+		final ArrayList< Double > spindleTubulinValues = new ArrayList<>();
+		final ArrayList< Double > dnaPeripheryTubulinValues = new ArrayList<>();
+
+		// dilate Dna to create a region within there are bona-fide tubulin intensities
+		RandomAccessibleInterval< BitType > dilateDnaMask = Algorithms.dilate( dnaAlignedDnaMask, 1 );
+
+		final RandomAccess< BitType > dnaMaskAccess = dnaAlignedDnaMask.randomAccess();
+		final RandomAccess< BitType > dilateDnaMaskAccess = dilateDnaMask.randomAccess();
+
+		final Cursor< R > cursor = Views.iterable( tubulinCrop ).cursor();
+		int[] position = new int[ 3 ];
+		double lateralDistSquared;
+
+		while( cursor.hasNext() )
+		{
+			cursor.next();
+
+			if ( dnaMaskAccess.setPositionAndGet( cursor ).get() )
+			{
+				// pixels containing DNA exclude tubulin and thus would
+				// lead to a too low threshold => exclude
+				continue;
+			}
+
+			if ( ! dilateDnaMaskAccess.setPositionAndGet( cursor ).get() )
+			{
+				// pixels that are outside the dilate dna mask
+				// could be outside the cell => exclude
+				continue;
+			}
+
+			cursor.localize( position );
+
+			dnaPeripheryTubulinValues.add( cursor.get().getRealDouble()  );
+
+			// we only compute the lateral distance
+			// that is, the distance to the spindle axis
+			lateralDistSquared = 0;
+			for ( int d = 0; d < 2; d++ )
+				lateralDistSquared += Math.pow( position[ d ] * settings.workingVoxelSize, 2 );
+
+			if ( lateralDistSquared < maxInsideSpindleDistSquared )
+			{
+				// pixel is close to spindle axis
+				// => add to the spindle values
+				spindleTubulinValues.add( cursor.get().getRealDouble() );
+			}
+			else
+			{
+				cytoplasmicTubulinValues.add( cursor.get().getRealDouble() );
+			}
+		}
+
+
+		double thresholdOtsu = Spindle3DUtils.thresholdOtsu( dnaPeripheryTubulinValues );
 
 		final double medianCytoplasm = Utils.median( cytoplasmicTubulinValues );
 		final double madCytoplasm = Utils.mad( cytoplasmicTubulinValues, medianCytoplasm );
@@ -540,9 +664,11 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		Logger.log( "Tubulin intensity cytoplasm based threshold (median + 4 * mad): " + (int) ( medianCytoplasm + 4 * madCytoplasm ) );
 		Logger.log( "Tubulin intensity cytoplasm based threshold (median + 5 * mad): " + (int) ( medianCytoplasm + 5 * madCytoplasm ) );
 		Logger.log( "Tubulin intensity spindle (mean +/- sdev): " + (int) meanSpindle + " +/- " + (int) sdevSpindle + "; numPixels: " + spindleTubulinValues.size() );
-		final double threshold = settings.spindleThresholdFactor * ( meanSpindle - meanCytoplasm ) + meanCytoplasm;
+		Logger.log( "Tubulin Otsu threshold: " + thresholdOtsu );
 
-		Logger.log( "Spindle threshold = factor * ( <spindle> - <cyto> ) + <cyto>: " + threshold );
+		final double threshold = thresholdOtsu; // medianCytoplasm + 5 * madCytoplasm;
+		// Logger.log( "Spindle threshold = median + 5 * mad: " + threshold );
+		Logger.log( "Spindle threshold = Tubulin Otsu threshold: " + threshold );
 
 		measurements.spindleSNR = ( meanSpindle - meanCytoplasm ) / Math.sqrt( sdevCytoplasm * sdevCytoplasm + sdevSpindle * sdevSpindle );
 
@@ -1576,6 +1702,8 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		imp.setCalibration( calibration );
 
 		final CompositeImage compositeImage = new CompositeImage( imp );
+		compositeImage.setDisplayMode( CompositeImage.COMPOSITE );
+		compositeImage.setZ( compositeImage.getNSlices() / 2 );
 
 		int contrastLimit = 255;
 		if ( compositeImage.getBitDepth() == 16 )
@@ -1583,6 +1711,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		final int numChannels = (int) rescaledVolumes.size();
 
+		// Color channels
 		for ( int c = 0; c < numChannels; c++ )
 		{
 			compositeImage.setC( c + 1 );
@@ -1593,7 +1722,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 			else
 				IJ.run( compositeImage, "Grays", "" );
 
-			compositeImage.setDisplayRange( 0, contrastLimit );
+			IJ.run( compositeImage,"Enhance Contrast", "saturated=0.35");
 		}
 
 		int lastChannelIndex = numChannels;
@@ -1611,8 +1740,6 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		compositeImage.setC( ++lastChannelIndex  );
 		IJ.run( compositeImage, "Grays", "" );
 		compositeImage.setDisplayRange( 0, 2 * contrastLimit );
-
-		compositeImage.setDisplayMode( CompositeImage.COMPOSITE );
 
 		return compositeImage;
 	}

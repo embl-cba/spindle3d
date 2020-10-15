@@ -15,7 +15,7 @@ public class RunSpindleMorphometry
 		command.opService = ij.op();
 
 		// Spindle touching objects
-		command.inputImageFile = new File("/Users/tischer/Desktop/kletter/spindle-test-data/20201006_R1E309_TubGFP_KATNA1_D1_023-1.tif" );
+		command.inputImageFile = new File("/Users/tischer/Desktop/kletter/spindle-test-data/20201006_R1E309_TubGFP_KATNA1_D0_016-3.tif" );
 
 		command.outputDirectory = new File( "/Users/tischer/Desktop/kletter" );
 		command.spindleChannelIndexOneBased = 2;  // normally 1
