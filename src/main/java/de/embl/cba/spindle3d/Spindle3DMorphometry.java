@@ -139,7 +139,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		createIsotropicallyResampledImages();
 
- //		if ( settings.useCATS )
+// 		if ( settings.useCATS )
 //		{
 //			createDnaMaskWithCATS();
 //			return "";
@@ -275,6 +275,8 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		return openedUpsampled;
 	}
+
+
 
 	private double[] getMiddle( ArrayList< double[] > vectors )
 	{

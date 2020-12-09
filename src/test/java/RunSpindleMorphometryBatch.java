@@ -16,7 +16,7 @@ public class RunSpindleMorphometryBatch
 		final Spindle3DCommand< R > command = new Spindle3DCommand<>();
 		command.opService = ij.op();
 
-		List< File > fileList = FileUtils.getFileList( new File( "/Users/tischer/Desktop/kletter/spindle-test-data" ), ".*", false );
+		List< File > fileList = FileUtils.getFileList( new File( "/Users/tischer/Desktop/kletter/dapi-test-data" ), ".*", false );
 
 		for ( File file : fileList )
 		{
@@ -29,6 +29,5 @@ public class RunSpindleMorphometryBatch
 			command.saveResults = true;
 			command.run();
 		}
-
 	}
 }
