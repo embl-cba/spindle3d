@@ -40,7 +40,7 @@ public class Spindle3DAdvancedCommand< R extends RealType< R > > implements Comm
 	private Context context;
 
 	@Parameter
-	private ScriptService scriptService;
+	public ScriptService scriptService;
 
 	@Parameter
 	public OpService opService;

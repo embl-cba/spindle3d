@@ -1057,14 +1057,13 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 						settings.workingVoxelSize },
 						settings.initialThresholdResolution );
 
-
 		final RandomAccessibleInterval< R > downscaled = createRescaledArrayImg( rai, scalingFactors );
 
 		if ( mask != null )
 		{
 			mask = Scalings.createResampledArrayImg( mask, scalingFactors );
-			Viewers.showRai3dWithImageJ( mask, "DNA Threshold Mask" );
-			Viewers.showRai3dWithImageJ( downscaled, "DNA Threshold" );
+			//Viewers.showRai3dWithImageJ( mask, "DNA Threshold Mask" );
+			//Viewers.showRai3dWithImageJ( downscaled, "DNA Threshold" );
 		}
 
 		Pair< Double, Double > minMaxValues;
@@ -1091,7 +1090,9 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 			RandomAccessibleInterval< R > dna,
 			double dnaThreshold )
 	{
-		final RandomAccessibleInterval< BitType > dnaMask = createCentralObjectsMask( dna, dnaThreshold );
+		final RandomAccessibleInterval< BitType > dnaMask = createLargestObjectMask( dna, dnaThreshold );
+
+		// final RandomAccessibleInterval< BitType > dnaMask = createCentralObjectsMask( dna, dnaThreshold );
 
 		if ( settings.showIntermediateImages )
 			show( dnaMask, "dna mask", null, workingCalibration, false );
@@ -1112,6 +1113,13 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 //			show( processedDnaMask, "eroded DNA mask", null, workingCalibration, false );
 
 		return dnaMask;
+	}
+
+	public RandomAccessibleInterval< BitType > createLargestObjectMask( RandomAccessibleInterval< R > dna, double dnaThreshold )
+	{
+		RandomAccessibleInterval< BitType > mask = createMask( dna, dnaThreshold );
+		Regions.onlyKeepLargestRegion( mask, ConnectedComponents.StructuringElement.EIGHT_CONNECTED );
+		return mask;
 	}
 
 	public AffineTransform3D computeDnaAlignmentTransformAndAlignImages(
@@ -1290,8 +1298,9 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 	private RandomAccessibleInterval< BitType > createDnaMaskAndMeasureDnaVolume( RandomAccessibleInterval< R > dna, Double dnaVolumeThreshold )
 	{
-		final RandomAccessibleInterval< BitType > dnaFinalMask =
-				createCentralObjectsMask( dna, dnaVolumeThreshold );
+		//final RandomAccessibleInterval< BitType > dnaFinalMask = createCentralObjectsMask( dna, dnaVolumeThreshold );
+
+		final RandomAccessibleInterval< BitType > dnaFinalMask = createLargestObjectMask( dna, dnaVolumeThreshold );
 
 		final long dnaVolumeInPixels =
 				Measurements.measureSizeInPixels( dnaFinalMask );

@@ -32,6 +32,7 @@ public class ScriptRunner implements Runnable
 		tryRun();
 
 		outputImp = WindowManager.getCurrentImage();
+		outputImp.setTitle( "DNA Mask" );
 
 		//imp.hide();
 		//outputImp.hide();

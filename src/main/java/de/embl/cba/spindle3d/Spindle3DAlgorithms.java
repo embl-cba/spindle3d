@@ -66,9 +66,10 @@ public abstract class Spindle3DAlgorithms
 
 		while( cursor.hasNext() )
 		{
+			cursor.fwd();
 			if ( maskAccess.setPositionAndGet( cursor ).get() > 0 )
 			{
-				double value = cursor.next().getRealDouble();
+				double value = cursor.get().getRealDouble();
 				if ( value > maxValue ) maxValue = value;
 				if ( value < minValue ) minValue = value;
 			}

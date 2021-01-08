@@ -13,6 +13,7 @@ public class RunSpindleMorphometry
 
 		final Spindle3DCommand< R > command = new Spindle3DCommand<>();
 		command.opService = ij.op();
+		command.scriptService = ij.script();
 
 		// Spindle touching objects
 		command.inputImageFile = new File("//Users/tischer/Documents/spindle3d/src/test/resources/multiple-dna/d1-t2-multiple-dna-4.tif" );
