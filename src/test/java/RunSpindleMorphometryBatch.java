@@ -23,9 +23,9 @@ public class RunSpindleMorphometryBatch
 			if ( ! file.getName().endsWith( ".tif" ) ) continue;
 			command.inputImageFile = file;
 			command.outputDirectory = new File( "/Users/tischer/Desktop/kletter" );
-			command.spindleChannelIndexOneBased = 2;  // normally 1
 			command.dnaChannelIndexOneBased = 1; // normally 2
-			command.showIntermediateResults = false;
+			command.spindleChannelIndexOneBased = 2;  // normally 1
+			command.showIntermediateImages = false;
 			command.saveResults = true;
 			command.run();
 		}

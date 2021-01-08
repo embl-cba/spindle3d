@@ -8,16 +8,17 @@ import de.embl.cba.tables.Tables;
 import ij.CompositeImage;
 import ij.IJ;
 import ij.ImagePlus;
+import ij.WindowManager;
 import net.imagej.ops.OpService;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.RealType;
 import org.scijava.Context;
-import org.scijava.ItemIO;
 import org.scijava.ItemVisibility;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.script.ScriptService;
 
 import javax.swing.*;
 import java.io.File;
@@ -39,6 +40,9 @@ public class Spindle3DAdvancedCommand< R extends RealType< R > > implements Comm
 	private Context context;
 
 	@Parameter
+	private ScriptService scriptService;
+
+	@Parameter
 	public OpService opService;
 
 	@Parameter ( label = "Input Image File" )
@@ -56,7 +60,7 @@ public class Spindle3DAdvancedCommand< R extends RealType< R > > implements Comm
 	public double voxelSpacingDuringAnalysis = settings.workingVoxelSize;
 
 //	@Parameter ( label = "DNA threshold factor" )
-	public double dnaThresholdFactor = settings.dnaThresholdFactor;
+	public double dnaThresholdFactor = settings.initialThresholdFactor;
 
 	@Parameter ( label = "Minimum Dynamic Range [segmentation threshold gray value]" )
 	public int minimalDynamicRange = settings.minimalDynamicRange;
@@ -76,6 +80,15 @@ public class Spindle3DAdvancedCommand< R extends RealType< R > > implements Comm
 	@Parameter ( label = "Spindle Channel [one-based index]" )
 	public long spindleChannelIndexOneBased = 1;
 
+	@Parameter ( label = "Show Intermediate Images" )
+	public boolean showIntermediateImages = false;
+
+	@Parameter ( label = "Show Intermediate Plots" )
+	public boolean showIntermediatePlots = false;
+
+	@Parameter ( label = "ROI detection macro" )
+	public File macroFile;
+
 	// TODO
 //	@Parameter ( label = "Initial Cell Center Detection Method", choices = { CCDM_NONE, CCDM_DNA, CCDM_TUBULIN } )
 	public String cellCenterDetectionMethodChoice = CCDM_NONE;
@@ -85,9 +98,6 @@ public class Spindle3DAdvancedCommand< R extends RealType< R > > implements Comm
 
 //	@Parameter ( label = "CATS Classifier" )
 	public File classifier;
-
-	@Parameter ( label = "Show Intermediate Results" )
-	public boolean showIntermediateResults = false;
 
 	@Parameter( visibility = ItemVisibility.MESSAGE )
 	private String version = "Spindle Morphometry Version: " + VERSION;
@@ -109,18 +119,20 @@ public class Spindle3DAdvancedCommand< R extends RealType< R > > implements Comm
 
 	private void setSettingsFromUI()
 	{
-		settings.showIntermediateResults = showIntermediateResults;
+		settings.showIntermediateImages = showIntermediateImages;
+		settings.showIntermediatePlots = showIntermediatePlots;
 		settings.workingVoxelSize = voxelSpacingDuringAnalysis;
 		settings.maxDnaLateralExtend = maxDnaLateralExtend;
 		settings.axialPoleRefinementRadius = axialPoleRefinementRadius;
 		settings.lateralPoleRefinementRadius = lateralPoleRefinementRadius;
 		settings.outputDirectory = outputDirectory;
-		settings.dnaThresholdFactor = dnaThresholdFactor;
+		settings.initialThresholdFactor = dnaThresholdFactor;
 		settings.minimalDynamicRange = minimalDynamicRange;
 		settings.version = version;
 		settings.useCATS = useCATS;
 		settings.classifier  = classifier;
 		settings.cellCenterDetectionMethod = CellCenterDetectionMethod.valueOf( cellCenterDetectionMethodChoice );
+		settings.roiDetectionMacro = macroFile;
 
 		Logger.log( settings.toString() );
 	}
@@ -145,7 +157,7 @@ public class Spindle3DAdvancedCommand< R extends RealType< R > > implements Comm
 		settings.tubulinChannelIndex = spindleChannelIndexOneBased - 1;
 
 		//final OpService service = context.service( OpService.class );
-		Spindle3DMorphometry morphometry = new Spindle3DMorphometry( settings, opService );
+		Spindle3DMorphometry morphometry = new Spindle3DMorphometry( settings, opService, scriptService );
 		final String log = morphometry.run( raiXYCZ );
 		Logger.log( log );
 

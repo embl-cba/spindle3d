@@ -14,11 +14,11 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.RealType;
 import org.scijava.Context;
-import org.scijava.ItemIO;
 import org.scijava.ItemVisibility;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.script.ScriptService;
 
 import javax.swing.*;
 import java.io.File;
@@ -39,6 +39,9 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 	@Parameter
 	public OpService opService;
 
+	@Parameter
+	public ScriptService scriptService;
+
 	@Parameter ( label = "Input Image File" )
 	public File inputImageFile;
 
@@ -51,11 +54,16 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 	@Parameter ( label = "Spindle Channel [one-based index]" )
 	public long spindleChannelIndexOneBased = 1;
 
-	@Parameter ( label = "Show Intermediate Results" )
-	public boolean showIntermediateResults = false;
+	public boolean showIntermediateImages = false;
+
+	public boolean showIntermediatePlots = false;
+
 
 	@Parameter( visibility = ItemVisibility.MESSAGE )
 	private String version = "Spindle Morphometry Version: " + Spindle3DVersion.VERSION;
+
+
+
 
 //	@Parameter( type = ItemIO.OUTPUT )
 //	private double spindleVolume;
@@ -64,7 +72,7 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 	private boolean useCATS = false;
 	private File classifier;
 	private double voxelSpacingDuringAnalysis = settings.workingVoxelSize;
-	private double dnaThresholdFactor = settings.dnaThresholdFactor;
+	private double dnaThresholdFactor = settings.initialThresholdFactor;
 	private int minimalDynamicRange = settings.minimalDynamicRange;
 	public boolean saveResults = true;
 	private File inputImageFilesParentDirectory = new File("/" );
@@ -82,10 +90,11 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 
 	private void setSettingsFromUI()
 	{
-		settings.showIntermediateResults = showIntermediateResults;
+		settings.showIntermediateImages = showIntermediateImages;
+		settings.showIntermediatePlots = showIntermediatePlots;
 		settings.workingVoxelSize = voxelSpacingDuringAnalysis;
 		settings.outputDirectory = outputDirectory;
-		settings.dnaThresholdFactor = dnaThresholdFactor;
+		settings.initialThresholdFactor = dnaThresholdFactor;
 		settings.minimalDynamicRange = minimalDynamicRange;
 		settings.version = version;
 		settings.useCATS = useCATS;
@@ -115,7 +124,7 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 		settings.tubulinChannelIndex = spindleChannelIndexOneBased - 1;
 
 		//final OpService service = context.service( OpService.class );
-		Spindle3DMorphometry morphometry = new Spindle3DMorphometry( settings, opService );
+		Spindle3DMorphometry morphometry = new Spindle3DMorphometry( settings, opService, scriptService );
 		final String log = morphometry.run( raiXYCZ );
 		Logger.log( log );
 

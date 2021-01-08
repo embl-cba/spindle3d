@@ -10,7 +10,7 @@
 
 	<groupId>de.embl.cba</groupId>
 	<artifactId>spindle3d</artifactId>
-	<version>0.7.3</version>
+	<version>0.7.4-SNAPSHOT</version>
 
 	<name>spindle3d</name>
 	<description>Fiji plugin for automated 3d spindle morphometry</description>

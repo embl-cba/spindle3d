@@ -51,6 +51,7 @@ public class Spindle3DMeasurements
 	public String version;
 	public Double spindleCoefficientOfVariation = Double.NaN;
 	public Double spindleSum = Double.NaN;
+	public double tubulinInitialThreshold;
 
 	private HashMap< Integer, Map< String, Object > > objectMeasurements;
 

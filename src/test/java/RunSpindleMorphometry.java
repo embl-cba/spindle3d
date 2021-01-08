@@ -15,13 +15,14 @@ public class RunSpindleMorphometry
 		command.opService = ij.op();
 
 		// Spindle touching objects
-		command.inputImageFile = new File("/Users/tischer/Desktop/kletter/spindle-test-data/20201006_R1E309_TubGFP_KATNA1_D0_016-3.tif" );
+		command.inputImageFile = new File("//Users/tischer/Documents/spindle3d/src/test/resources/multiple-dna/d1-t2-multiple-dna-4.tif" );
 
 		command.outputDirectory = new File( "/Users/tischer/Desktop/kletter" );
-		command.spindleChannelIndexOneBased = 2;  // normally 1
-		command.dnaChannelIndexOneBased = 1; // normally 2
-		command.showIntermediateResults = false;
-		command.saveResults = true;
+		command.spindleChannelIndexOneBased = 2;
+		command.dnaChannelIndexOneBased = 1;
+		command.showIntermediateImages = true;
+		command.showIntermediatePlots = false;
+		command.saveResults = false;
 		command.run();
 	}
 }
