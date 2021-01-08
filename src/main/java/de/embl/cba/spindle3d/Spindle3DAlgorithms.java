@@ -1,14 +1,27 @@
 package de.embl.cba.spindle3d;
 
+import de.embl.cba.morphometry.regions.Regions;
 import net.imglib2.*;
+import net.imglib2.algorithm.labeling.ConnectedComponents;
+import net.imglib2.roi.labeling.ImgLabeling;
+import net.imglib2.roi.labeling.LabelRegion;
+import net.imglib2.roi.labeling.LabelRegionCursor;
+import net.imglib2.roi.labeling.LabelRegions;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
 
+
+/**
+ *
+ * TODO: Move all of this to imagej-utils
+ *
+ */
 public abstract class Spindle3DAlgorithms
 {
 	public static < T extends RealType< T > & NativeType< T > > RealPoint getMaximumLocationWithinMask(
@@ -73,12 +86,51 @@ public abstract class Spindle3DAlgorithms
 				if ( value > maxValue ) maxValue = value;
 				if ( value < minValue ) minValue = value;
 			}
-			else
-			{
-				int a = 1;
-			}
 		}
 
 		return new ValuePair( minValue, maxValue );
+	}
+
+	public static < T extends RealType< T > & NativeType< T > >
+	void removeRegion( RandomAccessibleInterval< T > img, LabelRegion labelRegion )
+	{
+		final Cursor regionCursor = labelRegion.cursor();
+		final RandomAccess< T > access = img.randomAccess();
+		while ( regionCursor.hasNext() )
+		{
+			regionCursor.fwd();
+			access.setPosition( regionCursor );
+			access.get().setReal( 0 );
+		}
+	}
+
+	public static void removeRegionsTouchingLateralBorders( RandomAccessibleInterval< BitType > mask )
+	{
+		final ImgLabeling< Integer, IntType > imgLabeling = Regions.asImgLabeling( mask, ConnectedComponents.StructuringElement.EIGHT_CONNECTED );
+
+		final LabelRegions< Integer > labelRegions = new LabelRegions<>( imgLabeling );
+		for ( LabelRegion labelRegion : labelRegions )
+		{
+			final LabelRegionCursor cursor = labelRegion.cursor();
+
+			boolean touchesBorder = false;
+			while ( cursor.hasNext() )
+			{
+				cursor.fwd();
+				for ( int d = 0; d < 2; d++ )
+				{
+					if ( cursor.getIntPosition( d ) == 0 || cursor.getIntPosition( d ) == imgLabeling.max( d ) )
+					{
+						touchesBorder = true;
+					}
+				}
+
+				if ( touchesBorder )
+				{
+					removeRegion( mask, labelRegion );
+					break;
+				}
+			}
+		}
 	}
 }

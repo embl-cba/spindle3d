@@ -108,11 +108,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>net.imagej</groupId>
-			<artifactId>ij</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>de.embl.cba</groupId>
 			<artifactId>imagej-utils</artifactId>
 			<version>0.5.5-SNAPSHOT</version>

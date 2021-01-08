@@ -145,17 +145,18 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		createIsotropicallyResampledImages();
 
-		RandomAccessibleInterval< UnsignedByteType > mask = createDnaROI();
+		RandomAccessibleInterval< UnsignedByteType > mask = createDnaInitialROI();
 
 		measurements.dnaInitialThreshold = measureInitialThreshold( "DNA", dna, settings.initialThresholdFactor, mask );
 
 		if ( measurements.dnaInitialThreshold < settings.minimalDynamicRange )
 			return Spindle3DMeasurements.ANALYSIS_INTERRUPTED_LOW_DYNAMIC_DNA;
 
+		initialDnaMask = createInitialDnaMask( dna, measurements.dnaInitialThreshold );
+
 		measurements.tubulinInitialThreshold = measureInitialThreshold( "Tubulin", tubulin, settings.initialThresholdFactor, null );
 
 		RandomAccessibleInterval< BitType > initialTubulinMask = createMaskRemovingSmallObjects( tubulin, measurements.tubulinInitialThreshold );
-		RandomAccessibleInterval< BitType > initialDnaMask = createMaskRemovingSmallObjects( dna, measurements.dnaInitialThreshold );
 
 		if ( settings.showIntermediateImages )
 		{
@@ -163,8 +164,6 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 			show( initialDnaMask, "initial dna mask", null, workingCalibration, false );
 			return null;
 		}
-
-		this.initialDnaMask = createInitialDnaMask( dna, measurements.dnaInitialThreshold );
 
 		dnaEllipsoidVectors = determineDnaAxes( this.initialDnaMask );
 
@@ -244,7 +243,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 	}
 
 	@Nullable
-	private RandomAccessibleInterval< UnsignedByteType > createDnaROI()
+	private RandomAccessibleInterval< UnsignedByteType > createDnaInitialROI()
 	{
 		RandomAccessibleInterval< UnsignedByteType > mask = null;
 
@@ -1090,12 +1089,11 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 			RandomAccessibleInterval< R > dna,
 			double dnaThreshold )
 	{
-		final RandomAccessibleInterval< BitType > dnaMask = createLargestObjectMask( dna, dnaThreshold );
+		RandomAccessibleInterval< BitType > dnaMask = createMask( dna, dnaThreshold );
+		Spindle3DAlgorithms.removeRegionsTouchingLateralBorders( initialDnaMask );
+		Regions.onlyKeepLargestRegion( dnaMask, ConnectedComponents.StructuringElement.EIGHT_CONNECTED );
 
 		// final RandomAccessibleInterval< BitType > dnaMask = createCentralObjectsMask( dna, dnaThreshold );
-
-		if ( settings.showIntermediateImages )
-			show( dnaMask, "dna mask", null, workingCalibration, false );
 
 		/**
 		 * Morphological filtering
@@ -1118,6 +1116,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 	public RandomAccessibleInterval< BitType > createLargestObjectMask( RandomAccessibleInterval< R > dna, double dnaThreshold )
 	{
 		RandomAccessibleInterval< BitType > mask = createMask( dna, dnaThreshold );
+		Spindle3DAlgorithms.removeRegionsTouchingLateralBorders( initialDnaMask );
 		Regions.onlyKeepLargestRegion( mask, ConnectedComponents.StructuringElement.EIGHT_CONNECTED );
 		return mask;
 	}
@@ -1300,7 +1299,9 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 	{
 		//final RandomAccessibleInterval< BitType > dnaFinalMask = createCentralObjectsMask( dna, dnaVolumeThreshold );
 
-		final RandomAccessibleInterval< BitType > dnaFinalMask = createLargestObjectMask( dna, dnaVolumeThreshold );
+		RandomAccessibleInterval< BitType > dnaFinalMask = createMask( dna, dnaVolumeThreshold );
+		Spindle3DAlgorithms.removeRegionsTouchingLateralBorders( initialDnaMask );
+		Regions.onlyKeepLargestRegion( dnaFinalMask, ConnectedComponents.StructuringElement.EIGHT_CONNECTED );
 
 		final long dnaVolumeInPixels =
 				Measurements.measureSizeInPixels( dnaFinalMask );
@@ -1472,6 +1473,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 	{
 		RandomAccessibleInterval< BitType > mask = createMask( image, threshold );
 		Regions.removeSmallRegionsInMask( mask, settings.minimalDnaAndTubulinFragmentsVolume, settings.workingVoxelSize );
+
 		return mask;
 	}
 
