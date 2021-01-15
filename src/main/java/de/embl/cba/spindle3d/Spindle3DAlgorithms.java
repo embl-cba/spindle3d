@@ -1,5 +1,6 @@
 package de.embl.cba.spindle3d;
 
+import de.embl.cba.morphometry.Logger;
 import de.embl.cba.morphometry.regions.Regions;
 import net.imglib2.*;
 import net.imglib2.algorithm.labeling.ConnectedComponents;
@@ -104,11 +105,14 @@ public abstract class Spindle3DAlgorithms
 		}
 	}
 
-	public static void removeRegionsTouchingLateralBorders( RandomAccessibleInterval< BitType > mask )
+	public static int removeRegionsTouchingLateralBorders( RandomAccessibleInterval< BitType > mask )
 	{
 		final ImgLabeling< Integer, IntType > imgLabeling = Regions.asImgLabeling( mask, ConnectedComponents.StructuringElement.EIGHT_CONNECTED );
 
 		final LabelRegions< Integer > labelRegions = new LabelRegions<>( imgLabeling );
+
+		final int size = labelRegions.getExistingLabels().size();
+		int numRegionsTouchingBorder = 0;
 		for ( LabelRegion labelRegion : labelRegions )
 		{
 			final LabelRegionCursor cursor = labelRegion.cursor();
@@ -119,7 +123,7 @@ public abstract class Spindle3DAlgorithms
 				cursor.fwd();
 				for ( int d = 0; d < 2; d++ )
 				{
-					if ( cursor.getIntPosition( d ) == 0 || cursor.getIntPosition( d ) == imgLabeling.max( d ) )
+					if ( cursor.getIntPosition( d ) == imgLabeling.min( d ) || cursor.getIntPosition( d ) == imgLabeling.max( d ) )
 					{
 						touchesBorder = true;
 					}
@@ -127,10 +131,14 @@ public abstract class Spindle3DAlgorithms
 
 				if ( touchesBorder )
 				{
+					numRegionsTouchingBorder++;
 					removeRegion( mask, labelRegion );
 					break;
 				}
 			}
 		}
+
+		Logger.log( "Removed " + numRegionsTouchingBorder + " of " + size + " regions, because of image border contact." );
+		return size - numRegionsTouchingBorder;
 	}
 }

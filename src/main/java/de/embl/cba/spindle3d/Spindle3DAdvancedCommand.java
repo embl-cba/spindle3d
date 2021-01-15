@@ -86,7 +86,7 @@ public class Spindle3DAdvancedCommand< R extends RealType< R > > implements Comm
 	@Parameter ( label = "Show Intermediate Plots" )
 	public boolean showIntermediatePlots = false;
 
-	@Parameter ( label = "ROI detection macro" )
+	@Parameter ( label = "ROI detection macro", required = false )
 	public File macroFile;
 
 	// TODO

@@ -162,12 +162,11 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		{
 			show( initialTubulinMask, "initial tubulin mask", null, workingCalibration, false );
 			show( initialDnaMask, "initial dna mask", null, workingCalibration, false );
-			return null;
 		}
 
-		dnaEllipsoidVectors = determineDnaAxes( this.initialDnaMask );
+		dnaEllipsoidVectors = determineDnaAxes( initialDnaMask );
 
-		rescaledToDnaAlignmentTransform = computeDnaAlignmentTransformAndAlignImages( dna, tubulin, this.initialDnaMask, dnaEllipsoidVectors );
+		rescaledToDnaAlignmentTransform = computeDnaAlignmentTransformAndAlignImages( dna, tubulin, initialDnaMask, dnaEllipsoidVectors );
 
 		measureDnaAxialExtend( dnaAlignedDna );
 
@@ -181,7 +180,6 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		measureDnaHole( dnaLateralProfileAndRadius );
 
-		//measurements.spindleThreshold = measureSpindleThresholdOLD( dnaAlignedTubulin, dnaAlignedDnaMask );
 		measurements.spindleThreshold = measureSpindleThreshold( dnaAlignedTubulin, dnaAlignedDnaMask );
 
 		if ( measurements.spindleThreshold < settings.minimalDynamicRange )
@@ -247,7 +245,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 	{
 		RandomAccessibleInterval< UnsignedByteType > mask = null;
 
-		if ( settings.roiDetectionMacro != null )
+		if ( settings.roiDetectionMacro != null && settings.roiDetectionMacro.exists() )
 		{
 			final ArrayList< RandomAccessibleInterval< R > > list = new ArrayList<>();
 			list.add( tubulin );
@@ -267,7 +265,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 	{
 		/**
 		 * Crop a box around the DNA, rather taking more voxels along the
-		 * dna (spindle) axis, because there should not be DNA signals
+		 * dna (spindle) axis, because there should'nt be any DNA signals
 		 * from other cells.
 		 */
 		final FinalInterval boxAroundDna = FinalInterval.createMinMax(
@@ -1090,7 +1088,13 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 			double dnaThreshold )
 	{
 		RandomAccessibleInterval< BitType > dnaMask = createMask( dna, dnaThreshold );
-		Spindle3DAlgorithms.removeRegionsTouchingLateralBorders( initialDnaMask );
+		final int numRemainingRegions = Spindle3DAlgorithms.removeRegionsTouchingLateralBorders( dnaMask );
+		if ( numRemainingRegions == 0 )
+		{
+			final String log = "All initial DNA regions were touching the image border!";
+			measurements.log += log;
+			throw new RuntimeException( log );
+		}
 		Regions.onlyKeepLargestRegion( dnaMask, ConnectedComponents.StructuringElement.EIGHT_CONNECTED );
 
 		// final RandomAccessibleInterval< BitType > dnaMask = createCentralObjectsMask( dna, dnaThreshold );
@@ -1111,14 +1115,6 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 //			show( processedDnaMask, "eroded DNA mask", null, workingCalibration, false );
 
 		return dnaMask;
-	}
-
-	public RandomAccessibleInterval< BitType > createLargestObjectMask( RandomAccessibleInterval< R > dna, double dnaThreshold )
-	{
-		RandomAccessibleInterval< BitType > mask = createMask( dna, dnaThreshold );
-		Spindle3DAlgorithms.removeRegionsTouchingLateralBorders( initialDnaMask );
-		Regions.onlyKeepLargestRegion( mask, ConnectedComponents.StructuringElement.EIGHT_CONNECTED );
-		return mask;
 	}
 
 	public AffineTransform3D computeDnaAlignmentTransformAndAlignImages(
@@ -1300,18 +1296,28 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		//final RandomAccessibleInterval< BitType > dnaFinalMask = createCentralObjectsMask( dna, dnaVolumeThreshold );
 
 		RandomAccessibleInterval< BitType > dnaFinalMask = createMask( dna, dnaVolumeThreshold );
-		Spindle3DAlgorithms.removeRegionsTouchingLateralBorders( initialDnaMask );
+
+		if ( settings.showIntermediateImages )
+			show( Utils.copyAsArrayImg( dnaFinalMask ), "DNA final mask: all regions above threshold",
+					null, workingCalibration, false );
+
+		Spindle3DAlgorithms.removeRegionsTouchingLateralBorders( dnaFinalMask );
+
+		if ( settings.showIntermediateImages )
+			show( Utils.copyAsArrayImg( dnaFinalMask ), "DNA final mask: without border regions",
+					null, workingCalibration, false );
+
 		Regions.onlyKeepLargestRegion( dnaFinalMask, ConnectedComponents.StructuringElement.EIGHT_CONNECTED );
+
+		if ( settings.showIntermediateImages )
+			show( Utils.copyAsArrayImg( dnaFinalMask ), "DNA final mask: only largest region",
+					null, workingCalibration, false );
 
 		final long dnaVolumeInPixels =
 				Measurements.measureSizeInPixels( dnaFinalMask );
 
 		measurements.dnaVolumeCalibrated =
 				dnaVolumeInPixels * Math.pow( settings.workingVoxelSize, 3 );
-
-		if ( settings.showIntermediateImages )
-			show( dnaFinalMask, "DNA final mask",
-					null, workingCalibration, false );
 
 		return dnaFinalMask;
 	}
