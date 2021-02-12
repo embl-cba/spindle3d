@@ -8,7 +8,6 @@ import de.embl.cba.tables.Tables;
 import ij.CompositeImage;
 import ij.IJ;
 import ij.ImagePlus;
-import ij.WindowManager;
 import net.imagej.ops.OpService;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
@@ -56,8 +55,8 @@ public class Spindle3DAdvancedCommand< R extends RealType< R > > implements Comm
 	@Parameter ( label = "Output Directory", style = "directory" )
 	public File outputDirectory;
 
-	@Parameter ( label = "Voxel Size for Analysis" )
-	public double voxelSpacingDuringAnalysis = settings.workingVoxelSize;
+	@Parameter ( label = "Voxel size for analysis" )
+	public double voxelSizeForAnalysis = settings.voxelSizeForAnalysis;
 
 //	@Parameter ( label = "DNA threshold factor" )
 	public double dnaThresholdFactor = settings.initialThresholdFactor;
@@ -65,14 +64,17 @@ public class Spindle3DAdvancedCommand< R extends RealType< R > > implements Comm
 	@Parameter ( label = "Minimum Dynamic Range [segmentation threshold gray value]" )
 	public int minimalDynamicRange = settings.minimalDynamicRange;
 
-	@Parameter ( label = "Maximal DNA lateral extend [um]" )
-	public double maxDnaLateralExtend = settings.maxDnaLateralExtend * 2.0;
+	@Parameter ( label = "Maximal metaphase plate length [um]" )
+	public double maxMetaphasePlateLength = settings.maxMetaphasePlateLength;
 
 	@Parameter ( label = "Axial Spindle Poles Refinement Search Radius [um]" )
 	public double axialPoleRefinementRadius = settings.axialPoleRefinementRadius;
 
 	@Parameter ( label = "Lateral Spindle Poles Refinement Search Radius [um]" )
 	public double lateralPoleRefinementRadius = settings.lateralPoleRefinementRadius;
+
+	@Parameter ( label = "TEST: Smooth Spindle" )
+	public boolean smoothSpindle = settings.smoothSpindle;
 
 	@Parameter ( label = "DNA Channel [one-based index]" )
 	public long dnaChannelIndexOneBased = 2;
@@ -119,10 +121,11 @@ public class Spindle3DAdvancedCommand< R extends RealType< R > > implements Comm
 
 	private void setSettingsFromUI()
 	{
+		settings.smoothSpindle = smoothSpindle; // TODO PAPER : Remove
 		settings.showIntermediateImages = showIntermediateImages;
 		settings.showIntermediatePlots = showIntermediatePlots;
-		settings.workingVoxelSize = voxelSpacingDuringAnalysis;
-		settings.maxDnaLateralExtend = maxDnaLateralExtend;
+		settings.voxelSizeForAnalysis = voxelSizeForAnalysis;
+		settings.maxMetaphasePlateLength = maxMetaphasePlateLength;
 		settings.axialPoleRefinementRadius = axialPoleRefinementRadius;
 		settings.lateralPoleRefinementRadius = lateralPoleRefinementRadius;
 		settings.outputDirectory = outputDirectory;

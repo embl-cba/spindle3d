@@ -58,11 +58,8 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 
 	public boolean showIntermediatePlots = false;
 
-
 	@Parameter( visibility = ItemVisibility.MESSAGE )
 	private String version = "Spindle Morphometry Version: " + Spindle3DVersion.VERSION;
-
-
 
 
 //	@Parameter( type = ItemIO.OUTPUT )
@@ -71,7 +68,7 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 	private String cellCenterDetectionMethodChoice = CCDM_NONE;
 	private boolean useCATS = false;
 	private File classifier;
-	private double voxelSpacingDuringAnalysis = settings.workingVoxelSize;
+	private double voxelSpacingDuringAnalysis = settings.voxelSizeForAnalysis;
 	private double dnaThresholdFactor = settings.initialThresholdFactor;
 	private int minimalDynamicRange = settings.minimalDynamicRange;
 	public boolean saveResults = true;
@@ -92,7 +89,7 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 	{
 		settings.showIntermediateImages = showIntermediateImages;
 		settings.showIntermediatePlots = showIntermediatePlots;
-		settings.workingVoxelSize = voxelSpacingDuringAnalysis;
+		settings.voxelSizeForAnalysis = voxelSpacingDuringAnalysis;
 		settings.outputDirectory = outputDirectory;
 		settings.initialThresholdFactor = dnaThresholdFactor;
 		settings.minimalDynamicRange = minimalDynamicRange;

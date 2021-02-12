@@ -12,23 +12,31 @@ public class Spindle3DSettings<T extends RealType<T> & NativeType< T > >
 	 * Spatial
 	 */
 	// TODO: make all micrometer everything relative to something
-	public double workingVoxelSize = 0.25; // um
-	public double maxDnaLateralExtend = 12; // um
-	public double minimalDnaAndTubulinFragmentsVolume = 1 * 3 * 3; // um^3
-	public double maxCentralObjectRegionsDistance = 7; // um
-	public double cellRadius = 6.0; // um
-	public double erosionOfDnaMaskInCalibratedUnits = 1.0; // um
+	public double voxelSizeForAnalysis = 0.25; // um
+	public double maxMetaphasePlateLength = 12; // um
+	public double maxMetaphasePlateWidth = 5; // um
+	public double metaphasePlateDerivativeDelta = 3.0; // um
+	public double spindleFragmentInclusionZone = 3.0; // um;
 	public double axialPoleRefinementRadius = 1.0; // um
 	public double lateralPoleRefinementRadius = 2.0; // um
+
+
+	@Deprecated // ??
+	public double minimalDnaAndTubulinFragmentsVolume = 1 * 3 * 3; // um^3
+
+	public double maxCentralObjectRegionsDistance = 7; // um
+
+	public double cellRadius = 6.0; // um
+	public double erosionOfDnaMaskInCalibratedUnits = 1.0; // um
+	@Deprecated
 	public double spindleDerivativeDelta = 1.0; // um
-	public double derivativeDelta = 3.0;
 	public double interestPointsRadius = 0.5; // um
 
 	/**
 	 * Intensity
 	 */
 	public double initialThresholdFactor = 0.5;
-	public double initialThresholdResolution = 1.5;
+	public double voxelSizeForInitialDNAThreshold = 1.5; // um
 	public int minimalDynamicRange = 7;
 	public double thresholdInUnitsOfBackgroundPeakHalfWidth = 5.0;
 
@@ -52,6 +60,9 @@ public class Spindle3DSettings<T extends RealType<T> & NativeType< T > >
 	public CellCenterDetectionMethod cellCenterDetectionMethod;
 	public double spindleThresholdFactor = 1.0;
 	public File roiDetectionMacro;
+	// TMP
+	public boolean smoothSpindle = true;
+
 
 	public enum CellCenterDetectionMethod
 	{
@@ -70,8 +81,8 @@ public class Spindle3DSettings<T extends RealType<T> & NativeType< T > >
 
 		settings += "\n";
 		settings += "## Spindle Morphometry Settings\n";
-		settings += "workingVoxelSize: " + workingVoxelSize + "\n";
-		settings += "dnaThresholdResolution: " + initialThresholdResolution + "\n";
+		settings += "workingVoxelSize: " + voxelSizeForAnalysis + "\n";
+		settings += "dnaThresholdResolution: " + voxelSizeForInitialDNAThreshold + "\n";
 		settings += "dnaThresholdFactor: " + initialThresholdFactor + "\n";
 		settings += "spindleThresholdFactor: " + spindleThresholdFactor + "\n";
 		settings += "spindleDerivativeDelta: " + spindleDerivativeDelta + "\n";

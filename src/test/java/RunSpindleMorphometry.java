@@ -16,13 +16,13 @@ public class RunSpindleMorphometry
 		command.scriptService = ij.script();
 
 		// Spindle touching objects
-		command.inputImageFile = new File("//Users/tischer/Documents/spindle3d/src/test/resources/multiple-dna/d1-t2-multiple-dna-4.tif" );
+		command.inputImageFile = new File("//Users/tischer/Documents/spindle3d/src/test/resources/multiple-dna/d1-t2-multiple-dna-0.tif" );
 
 		command.outputDirectory = new File( "/Users/tischer/Desktop/kletter" );
 		command.spindleChannelIndexOneBased = 2;
 		command.dnaChannelIndexOneBased = 1;
-		command.showIntermediateImages = true;
-		command.showIntermediatePlots = false;
+		command.showIntermediateImages = false;
+		command.showIntermediatePlots = true;
 		command.saveResults = false;
 		command.run();
 	}
