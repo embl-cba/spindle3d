@@ -11,15 +11,14 @@ public class Spindle3DSettings<T extends RealType<T> & NativeType< T > >
 	/**
 	 * Spatial
 	 */
-	// TODO: make all micrometer everything relative to something
 	public double voxelSizeForAnalysis = 0.25; // um
-	public double maxMetaphasePlateLength = 12; // um
-	public double maxMetaphasePlateWidth = 5; // um
-	public double metaphasePlateDerivativeDelta = 3.0; // um
+	public double maxMetaphasePlateLength = 22; // um
+	public double maxMetaphasePlateWidth = 8; // um
+	public double metaphasePlateWidthDerivativeDelta = 1.0; // um
+	public double metaphasePlateLengthDerivativeDelta = 2.0; // um
 	public double spindleFragmentInclusionZone = 3.0; // um;
 	public double axialPoleRefinementRadius = 1.0; // um
 	public double lateralPoleRefinementRadius = 2.0; // um
-
 
 	@Deprecated // ??
 	public double minimalDnaAndTubulinFragmentsVolume = 1 * 3 * 3; // um^3
@@ -55,15 +54,19 @@ public class Spindle3DSettings<T extends RealType<T> & NativeType< T > >
 	public long tubulinChannelIndex;
 	public boolean showOutputImage = false;
 	public boolean showMetaphaseClassification = false;
+	@Deprecated
 	public boolean useCATS = false;
+	@Deprecated
 	public File classifier;
+	@Deprecated
 	public CellCenterDetectionMethod cellCenterDetectionMethod;
 	public double spindleThresholdFactor = 1.0;
 	public File roiDetectionMacro;
-	// TMP
-	public boolean smoothSpindle = true;
 
+	@Deprecated
+	public boolean smoothSpindle = false; // TODO PAPER Remove
 
+	@Deprecated
 	public enum CellCenterDetectionMethod
 	{
 		None,
@@ -72,8 +75,6 @@ public class Spindle3DSettings<T extends RealType<T> & NativeType< T > >
 	}
 
 	public static final String CCDM_NONE = "None";
-	public static final String CCDM_DNA = "BlurredDnaImage";
-	public static final String CCDM_TUBULIN = "BlurredTubulinImage";
 
 	public String toString()
 	{

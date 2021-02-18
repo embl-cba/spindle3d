@@ -70,10 +70,10 @@ public abstract class Spindle3DAlgorithms
 		return point;
 	}
 
-	public static <T extends RealType<T> > Pair<Double, Double> getMinMaxValues( RandomAccessibleInterval<T> rai, RandomAccessibleInterval< UnsignedByteType > mask )
+	public static <T extends RealType<T> > Pair<Double, Double> getMinMaxValues( RandomAccessibleInterval<T> rai, RandomAccessibleInterval< BitType > mask )
 	{
 		final Cursor<T> cursor = Views.iterable( rai ).localizingCursor();
-		final RandomAccess< UnsignedByteType > maskAccess = mask.randomAccess();
+		final RandomAccess< BitType > maskAccess = mask.randomAccess();
 
 		double maxValue = -1.7976931348623157E308D;
 		double minValue = 1.7976931348623157E308D;
@@ -81,7 +81,7 @@ public abstract class Spindle3DAlgorithms
 		while( cursor.hasNext() )
 		{
 			cursor.fwd();
-			if ( maskAccess.setPositionAndGet( cursor ).get() > 0 )
+			if ( maskAccess.setPositionAndGet( cursor ).get() )
 			{
 				double value = cursor.get().getRealDouble();
 				if ( value > maxValue ) maxValue = value;
@@ -105,7 +105,13 @@ public abstract class Spindle3DAlgorithms
 		}
 	}
 
-	public static int removeRegionsTouchingLateralBorders( RandomAccessibleInterval< BitType > mask )
+	/**
+	 *
+	 * @param mask
+	 * @param borderDimensions 2 = lateral only, 3 = all
+	 * @return
+	 */
+	public static int removeRegionsTouchingImageBorders( RandomAccessibleInterval< BitType > mask, int borderDimensions )
 	{
 		final ImgLabeling< Integer, IntType > imgLabeling = Regions.asImgLabeling( mask, ConnectedComponents.StructuringElement.EIGHT_CONNECTED );
 
@@ -121,7 +127,7 @@ public abstract class Spindle3DAlgorithms
 			while ( cursor.hasNext() )
 			{
 				cursor.fwd();
-				for ( int d = 0; d < 2; d++ )
+				for ( int d = 0; d < borderDimensions; d++ )
 				{
 					if ( cursor.getIntPosition( d ) == imgLabeling.min( d ) || cursor.getIntPosition( d ) == imgLabeling.max( d ) )
 					{

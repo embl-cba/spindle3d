@@ -22,7 +22,7 @@ public class Spindle3DMeasurements
 
 	public Double metaphasePlateLength = Double.NaN;
 	public Double metaphasePlateWidth = Double.NaN;
-	public Double chormatinVolume = Double.NaN;
+	public Double chromatinVolume = Double.NaN;
 	public Double chromatinDilation = Double.NaN;
 	public Double spindleLength = Double.NaN;
 	public Double spindlePoleARefinementDistance = Double.NaN;
@@ -63,7 +63,7 @@ public class Spindle3DMeasurements
 
 		addMeasurement( addLengthUnit( "MetaphasePlate_Length" ), metaphasePlateLength );
 
-		addMeasurement( "Chromatin_Volume" + SEP + Spindle3DMeasurements.VOLUME_UNIT, chormatinVolume );
+		addMeasurement( "Chromatin_Volume" + SEP + Spindle3DMeasurements.VOLUME_UNIT, chromatinVolume );
 
 		addMeasurement( "Chromatin_Dilation", chromatinDilation );
 

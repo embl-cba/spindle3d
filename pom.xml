@@ -110,7 +110,7 @@
 		<dependency>
 			<groupId>de.embl.cba</groupId>
 			<artifactId>imagej-utils</artifactId>
-			<version>0.5.5-SNAPSHOT</version>
+			<version>0.5.9-SNAPSHOT</version>
 		</dependency>
 
 	</dependencies>

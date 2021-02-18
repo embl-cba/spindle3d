@@ -1,5 +1,4 @@
 import de.embl.cba.spindle3d.Spindle3DAdvancedCommand;
-import de.embl.cba.spindle3d.Spindle3DCommand;
 import de.embl.cba.tables.FileUtils;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
@@ -28,7 +27,7 @@ public class RunAdvancedSpindleMorphometryBatch
 		{
 			if ( ! file.getName().endsWith( ".tif" ) ) continue;
 
-			command.inputImageFile = file;
+			command.dnaAndTubulinImageFile = file;
 			command.outputDirectory = new File( "/Users/tischer/Desktop/Desktop/kletter/multiple-dna" );
 			command.dnaChannelIndexOneBased = 1;
 			command.spindleChannelIndexOneBased = 2;

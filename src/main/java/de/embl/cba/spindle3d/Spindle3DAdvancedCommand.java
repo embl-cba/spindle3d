@@ -1,16 +1,15 @@
 package de.embl.cba.spindle3d;
 
-import de.embl.cba.morphometry.ImageSuite3D;
-import de.embl.cba.morphometry.Logger;
-import de.embl.cba.morphometry.Utils;
-import de.embl.cba.morphometry.Measurements;
+import de.embl.cba.morphometry.*;
 import de.embl.cba.tables.Tables;
 import ij.CompositeImage;
 import ij.IJ;
 import ij.ImagePlus;
 import net.imagej.ops.OpService;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.converter.Converters;
 import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
 import org.scijava.Context;
 import org.scijava.ItemVisibility;
@@ -25,8 +24,6 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-import static de.embl.cba.spindle3d.Spindle3DSettings.CCDM_NONE;
-import static de.embl.cba.spindle3d.Spindle3DSettings.CellCenterDetectionMethod;
 import static de.embl.cba.spindle3d.Spindle3DVersion.VERSION;
 
 
@@ -44,15 +41,24 @@ public class Spindle3DAdvancedCommand< R extends RealType< R > > implements Comm
 	@Parameter
 	public OpService opService;
 
-	@Parameter ( label = "Input Image File" )
-	public File inputImageFile;
+	@Parameter ( label = "DNA and tubulin image file" )
+	public File dnaAndTubulinImageFile;
+
+	@Parameter ( label = "DNA channel [one-based index]" )
+	public long dnaChannelIndexOneBased = 2;
+
+	@Parameter ( label = "Spindle channel [one-based index]" )
+	public long spindleChannelIndexOneBased = 1;
+
+	@Parameter ( label = "Cell mask file (optional)", required = false)
+	public File cellMaskFile;
 
 	// TODO: how to make this more clear and easy?
 	// (it is to remove to part of the path to only store a relative directory )
-	@Parameter ( label = "Input Image Files Parent Directory", style = "directory" )
+	@Parameter ( label = "Input image files parent directory", style = "directory" )
 	public File inputImageFilesParentDirectory = new File("/" );
 
-	@Parameter ( label = "Output Directory", style = "directory" )
+	@Parameter ( label = "Output directory", style = "directory" )
 	public File outputDirectory;
 
 	@Parameter ( label = "Voxel size for analysis" )
@@ -61,62 +67,45 @@ public class Spindle3DAdvancedCommand< R extends RealType< R > > implements Comm
 //	@Parameter ( label = "DNA threshold factor" )
 	public double dnaThresholdFactor = settings.initialThresholdFactor;
 
-	@Parameter ( label = "Minimum Dynamic Range [segmentation threshold gray value]" )
+	@Parameter ( label = "Minimum dynamic range [segmentation threshold gray value]" )
 	public int minimalDynamicRange = settings.minimalDynamicRange;
 
 	@Parameter ( label = "Maximal metaphase plate length [um]" )
 	public double maxMetaphasePlateLength = settings.maxMetaphasePlateLength;
 
-	@Parameter ( label = "Axial Spindle Poles Refinement Search Radius [um]" )
+	@Parameter ( label = "Axial spindle poles refinement search radius [um]" )
 	public double axialPoleRefinementRadius = settings.axialPoleRefinementRadius;
 
-	@Parameter ( label = "Lateral Spindle Poles Refinement Search Radius [um]" )
+	@Parameter ( label = "Lateral spindle poles refinement search radius [um]" )
 	public double lateralPoleRefinementRadius = settings.lateralPoleRefinementRadius;
 
-	@Parameter ( label = "TEST: Smooth Spindle" )
+	@Parameter ( label = "TEST: Smooth spindle" )
 	public boolean smoothSpindle = settings.smoothSpindle;
 
-	@Parameter ( label = "DNA Channel [one-based index]" )
-	public long dnaChannelIndexOneBased = 2;
-
-	@Parameter ( label = "Spindle Channel [one-based index]" )
-	public long spindleChannelIndexOneBased = 1;
-
-	@Parameter ( label = "Show Intermediate Images" )
+	@Parameter ( label = "Show intermediate images" )
 	public boolean showIntermediateImages = false;
 
-	@Parameter ( label = "Show Intermediate Plots" )
+	@Parameter ( label = "Show intermediate plots" )
 	public boolean showIntermediatePlots = false;
 
-	@Parameter ( label = "ROI detection macro", required = false )
+	@Parameter ( label = "Cell ROI detection macro file (optional)", required = false )
 	public File macroFile;
-
-	// TODO
-//	@Parameter ( label = "Initial Cell Center Detection Method", choices = { CCDM_NONE, CCDM_DNA, CCDM_TUBULIN } )
-	public String cellCenterDetectionMethodChoice = CCDM_NONE;
-
-	//	@Parameter ( label = "Use CATS for Metaphase Detection" )
-	public boolean useCATS = false;
-
-//	@Parameter ( label = "CATS Classifier" )
-	public File classifier;
 
 	@Parameter( visibility = ItemVisibility.MESSAGE )
 	private String version = "Spindle Morphometry Version: " + VERSION;
-
-//	@Parameter( type = ItemIO.OUTPUT )
-//	private double spindleVolume;
 
 	public boolean saveResults = true;
 
 	private String imageName;
 	private HashMap< Integer, Map< String, Object > > objectMeasurements;
+	private RandomAccessibleInterval< R > dnaAndTubulinXYCZ;
+	private RandomAccessibleInterval< BitType > cellMask;
 
 	public void run()
 	{
 		if ( ! ImageSuite3D.isAvailable() ) return;
 		setSettingsFromUI();
-		processFile( inputImageFile );
+		processFile( dnaAndTubulinImageFile );
 	}
 
 	private void setSettingsFromUI()
@@ -132,9 +121,6 @@ public class Spindle3DAdvancedCommand< R extends RealType< R > > implements Comm
 		settings.initialThresholdFactor = dnaThresholdFactor;
 		settings.minimalDynamicRange = minimalDynamicRange;
 		settings.version = version;
-		settings.useCATS = useCATS;
-		settings.classifier  = classifier;
-		settings.cellCenterDetectionMethod = CellCenterDetectionMethod.valueOf( cellCenterDetectionMethodChoice );
 		settings.roiDetectionMacro = macroFile;
 
 		Logger.log( settings.toString() );
@@ -148,32 +134,28 @@ public class Spindle3DAdvancedCommand< R extends RealType< R > > implements Comm
 	private void processFile( File file )
 	{
 		setImageName();
-
 		logStart();
 
-		final ImagePlus imagePlus = Utils.openWithBioFormats( file.toString() );
-		setSettingsFromImagePlus( imagePlus );
+		dnaAndTubulinXYCZ = openTubulinAndDNAImage( file );
 
-		final RandomAccessibleInterval< R > raiXYCZ = ImageJFunctions.wrapReal( imagePlus );
+		if ( cellMaskFile != null )
+		{
+			final ImagePlus imagePlus = Utils.openWithBioFormats( cellMaskFile.toString() );
+			final RandomAccessibleInterval< R > rai = ImageJFunctions.wrapReal( imagePlus );
+			cellMask = Converters.convert( rai, ( i, o ) ->
+			o.set( i.getRealDouble() > 0.5 ? true : false ), new BitType() );
+		}
 
-		settings.dnaChannelIndex = dnaChannelIndexOneBased - 1;
-		settings.tubulinChannelIndex = spindleChannelIndexOneBased - 1;
-
-		//final OpService service = context.service( OpService.class );
 		Spindle3DMorphometry morphometry = new Spindle3DMorphometry( settings, opService, scriptService );
-		final String log = morphometry.run( raiXYCZ );
+		morphometry.setCellMask( cellMask );
+		final String log = morphometry.run( dnaAndTubulinXYCZ );
 		Logger.log( log );
-
-		final Spindle3DMeasurements measurements =
-				morphometry.getMeasurements();
-
-		//spindleVolume = measurements.spindleVolume;
 
 		objectMeasurements = morphometry.getObjectMeasurements();
 
 		addImagePathToMeasurements(
 				inputImageFilesParentDirectory.toPath(),
-				inputImageFile,
+				dnaAndTubulinImageFile,
 				objectMeasurements,
 				"Path_InputImage" );
 
@@ -198,11 +180,21 @@ public class Spindle3DAdvancedCommand< R extends RealType< R > > implements Comm
 		logEnd();
 	}
 
+	private RandomAccessibleInterval< R > openTubulinAndDNAImage( File file )
+	{
+		final ImagePlus imagePlus = Utils.openWithBioFormats( file.toString() );
+		setSettingsFromImagePlus( imagePlus );
+		final RandomAccessibleInterval< R > raiXYCZ = ImageJFunctions.wrapReal( imagePlus );
+		settings.dnaChannelIndex = dnaChannelIndexOneBased - 1;
+		settings.tubulinChannelIndex = spindleChannelIndexOneBased - 1;
+		return raiXYCZ;
+	}
+
 	private void setImageName()
 	{
-		imageName = inputImageFile.getName().replace( ".tif", "" );
-		imageName = inputImageFile.getName().replace( ".ome", "" );
-		imageName = inputImageFile.getName().replace( ".zip", "" );
+		imageName = dnaAndTubulinImageFile.getName().replace( ".tif", "" );
+		imageName = dnaAndTubulinImageFile.getName().replace( ".ome", "" );
+		imageName = dnaAndTubulinImageFile.getName().replace( ".zip", "" );
 	}
 
 	private void logEnd()
