@@ -11,9 +11,10 @@ import ij.ImagePlus;
 import loci.common.DebugTools;
 import net.imagej.ops.OpService;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.converter.Converters;
 import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
-import org.scijava.Context;
 import org.scijava.ItemVisibility;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
@@ -32,9 +33,6 @@ import static de.embl.cba.spindle3d.Spindle3DSettings.CCDM_NONE;
 public class Spindle3DCommand< R extends RealType< R > > implements Command
 {
 	public Spindle3DSettings settings = new Spindle3DSettings();
-
-	@Parameter
-	private Context context;
 
 	@Parameter
 	public OpService opService;
@@ -73,6 +71,7 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 	private int minimalDynamicRange = settings.minimalDynamicRange;
 	public boolean saveResults = true;
 	private File inputImageFilesParentDirectory = new File("/" );
+	private RandomAccessibleInterval< BitType > cellMask;
 
 	private String imageName;
 	private HashMap< Integer, Map< String, Object > > objectMeasurements;
@@ -120,8 +119,19 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 		settings.dnaChannelIndex = dnaChannelIndexOneBased - 1;
 		settings.tubulinChannelIndex = spindleChannelIndexOneBased - 1;
 
+		String cellMaskPath = file.getAbsolutePath().replace( ".tif", "_CellMask.tif" );
+		final File cellMaskFile = new File( cellMaskPath );
+		if ( cellMaskFile.exists() )
+		{
+			final ImagePlus imagePlus = Utils.openWithBioFormats( cellMaskPath );
+			final RandomAccessibleInterval< R > rai = ImageJFunctions.wrapReal( imagePlus );
+			cellMask = Converters.convert( rai, ( i, o ) ->
+					o.set( i.getRealDouble() > 0.5 ? true : false ), new BitType() );
+		}
+
 		//final OpService service = context.service( OpService.class );
 		Spindle3DMorphometry morphometry = new Spindle3DMorphometry( settings, opService, scriptService );
+		morphometry.setCellMask( cellMask );
 		final String log = morphometry.run( raiXYCZ );
 		Logger.log( log );
 

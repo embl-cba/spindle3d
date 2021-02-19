@@ -43,6 +43,8 @@ public class Spindle3DMeasurements
 	public Double spindleSumIntensityRaw = Double.NaN;;
 	public Double spindleWidthAvg = Double.NaN;
 	public Double spindleAspectRatio = Double.NaN;
+	public Double cellVolume = Double.NaN;
+	public Double cellTubulinSumIntensityRaw = Double.NaN;
 
 	private HashMap< Integer, Map< String, Object > > objectMeasurements;
 
@@ -96,6 +98,10 @@ public class Spindle3DMeasurements
 		addMeasurement( "Spindle_Sum_Intensity_Corrected", spindleSumIntensityCorrected );
 
 		addMeasurement( "Spindle_Sum_Intensity_Raw", spindleSumIntensityRaw );
+
+		addMeasurement( "Cell_Volume" + SEP + Spindle3DMeasurements.VOLUME_UNIT, cellVolume );
+
+		addMeasurement( "Cell_Tubulin_Sum_Intensity_Raw", cellTubulinSumIntensityRaw );
 
 		addMeasurement( "Comment", log );
 	}
