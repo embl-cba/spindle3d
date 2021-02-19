@@ -207,7 +207,8 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		measurements.spindleVolume = measureVolume( spindleAlignedSpindleMask );
 
-		measurements.cellVolume = measureVolume( spindleAlignedCellMask );
+		if ( spindleAlignedCellMask != null )
+			measurements.cellVolume = measureVolume( spindleAlignedCellMask );
 
 		measurements.spindleIntensityVariation
 				= Utils.measureCoefficientOfVariation(
@@ -221,7 +222,8 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 				spindleAlignedSpindleMask,
 				0.0 );
 
-		measurements.cellTubulinSumIntensityRaw = Utils.measureSum(
+		if ( spindleAlignedCellMask != null)
+			measurements.cellTubulinSumIntensityRaw = Utils.measureSum(
 				spindleAlignedTublin,
 				spindleAlignedCellMask,
 				0.0 );
@@ -452,13 +454,8 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 	public Double measureVolume( RandomAccessibleInterval< BitType > mask )
 	{
-		if ( mask == null )
-			return Double.NaN;
-		else
-			return Measurements.measureSizeInPixels( mask )
-				* Math.pow( settings.voxelSizeForAnalysis, 3 );
+		return Measurements.measureSizeInPixels( mask ) * Math.pow( settings.voxelSizeForAnalysis, 3 );
 	}
-
 
 	/**
 	 *

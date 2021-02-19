@@ -111,23 +111,9 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 
 		logStart();
 
-		final ImagePlus imagePlus = Utils.openWithBioFormats( file.toString() );
-		setSettingsFromImagePlus( imagePlus );
+		final RandomAccessibleInterval< R > raiXYCZ = openImage( file );
 
-		final RandomAccessibleInterval< R > raiXYCZ = ImageJFunctions.wrapReal( imagePlus );
-
-		settings.dnaChannelIndex = dnaChannelIndexOneBased - 1;
-		settings.tubulinChannelIndex = spindleChannelIndexOneBased - 1;
-
-		String cellMaskPath = file.getAbsolutePath().replace( ".tif", "_CellMask.tif" );
-		final File cellMaskFile = new File( cellMaskPath );
-		if ( cellMaskFile.exists() )
-		{
-			final ImagePlus imagePlus = Utils.openWithBioFormats( cellMaskPath );
-			final RandomAccessibleInterval< R > rai = ImageJFunctions.wrapReal( imagePlus );
-			cellMask = Converters.convert( rai, ( i, o ) ->
-					o.set( i.getRealDouble() > 0.5 ? true : false ), new BitType() );
-		}
+		tryOpenCellMask( file );
 
 		//final OpService service = context.service( OpService.class );
 		Spindle3DMorphometry morphometry = new Spindle3DMorphometry( settings, opService, scriptService );
@@ -162,6 +148,34 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 		if ( saveResults ) saveMeasurements( morphometry );
 
 		logEnd();
+	}
+
+	private RandomAccessibleInterval< R > openImage( File file )
+	{
+		final ImagePlus imagePlus = Utils.openWithBioFormats( file.toString() );
+		setSettingsFromImagePlus( imagePlus );
+
+		final RandomAccessibleInterval< R > raiXYCZ = ImageJFunctions.wrapReal( imagePlus );
+
+		settings.dnaChannelIndex = dnaChannelIndexOneBased - 1;
+		settings.tubulinChannelIndex = spindleChannelIndexOneBased - 1;
+		return raiXYCZ;
+	}
+
+	private void tryOpenCellMask( File file )
+	{
+		String cellMaskPath = file.getAbsolutePath().replace( ".tif", "_CellMask.tif" );
+		final File cellMaskFile = new File( cellMaskPath );
+		if ( cellMaskFile.exists() )
+		{
+			final RandomAccessibleInterval< R > rai = ImageJFunctions.wrapReal( Utils.openWithBioFormats( cellMaskPath ) );
+			cellMask = Converters.convert( rai, ( i, o ) -> o.set( i.getRealDouble() > 0.5 ? true : false ), new BitType() );
+			Logger.log( "Found cell mask file: " + cellMaskPath );
+		}
+		else
+		{
+			Logger.log( "Did not find cell mask file: " + cellMaskPath );
+		}
 	}
 
 	private void setImageName()
@@ -226,7 +240,16 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 			HashMap< Integer, Map< String, Object > > objectMeasurements,
 			String path_inputImage )
 	{
-		final Path relativeInputImagePath = parentPath.relativize( inputImageFile.toPath() );
+		Path relativeInputImagePath;
+		try
+		{
+			relativeInputImagePath = parentPath.relativize( inputImageFile.toPath() );
+		}
+		catch ( Exception e )
+		{
+			Logger.log( "[WARNING]: Could not relativize path " + inputImageFile );
+			relativeInputImagePath = inputImageFile.toPath();
+		}
 
 		Measurements.addMeasurement(
 				objectMeasurements,
