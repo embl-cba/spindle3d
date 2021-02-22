@@ -27,8 +27,6 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-import static de.embl.cba.spindle3d.Spindle3DSettings.CCDM_NONE;
-
 @Plugin(type = Command.class, menuPath = "Plugins>Spindle3D>Spindle3D..." )
 public class Spindle3DCommand< R extends RealType< R > > implements Command
 {
@@ -52,27 +50,14 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 	@Parameter ( label = "Spindle Channel [one-based index]" )
 	public long spindleChannelIndexOneBased = 1;
 
-	public boolean showIntermediateImages = false;
-
-	public boolean showIntermediatePlots = false;
-
 	@Parameter( visibility = ItemVisibility.MESSAGE )
-	private String version = "Spindle Morphometry Version: " + Spindle3DVersion.VERSION;
+	public String version = "Spindle Morphometry Version: " + Spindle3DVersion.VERSION;
 
-
-//	@Parameter( type = ItemIO.OUTPUT )
-//	private double spindleVolume;
-
-	private String cellCenterDetectionMethodChoice = CCDM_NONE;
-	private boolean useCATS = false;
-	private File classifier;
-	private double voxelSpacingDuringAnalysis = settings.voxelSizeForAnalysis;
-	private double dnaThresholdFactor = settings.initialThresholdFactor;
-	private int minimalDynamicRange = settings.minimalDynamicRange;
+	public boolean showIntermediateImages = false;
+	public boolean showIntermediatePlots = false;
 	public boolean saveResults = true;
-	private File inputImageFilesParentDirectory = new File("/" );
-	private RandomAccessibleInterval< BitType > cellMask;
 
+	private File inputImageFilesParentDirectory = new File("/" );
 	private String imageName;
 	private HashMap< Integer, Map< String, Object > > objectMeasurements;
 
@@ -80,24 +65,18 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 	{
 		DebugTools.setRootLevel("OFF"); // Bio-Formats
 		if ( ! ImageSuite3D.isAvailable() ) return;
-		setSettingsFromUI();
-		processFile( inputImageFile );
+		Spindle3DSettings settings = fetchSettingsFromUI();
+		processFile( inputImageFile, settings );
 	}
 
-	private void setSettingsFromUI()
+	protected Spindle3DSettings fetchSettingsFromUI()
 	{
 		settings.showIntermediateImages = showIntermediateImages;
 		settings.showIntermediatePlots = showIntermediatePlots;
-		settings.voxelSizeForAnalysis = voxelSpacingDuringAnalysis;
 		settings.outputDirectory = outputDirectory;
-		settings.initialThresholdFactor = dnaThresholdFactor;
-		settings.minimalDynamicRange = minimalDynamicRange;
 		settings.version = version;
-		settings.useCATS = useCATS;
-		settings.classifier  = classifier;
-		settings.cellCenterDetectionMethod = Spindle3DSettings.CellCenterDetectionMethod.valueOf( cellCenterDetectionMethodChoice );
-
 		Logger.log( settings.toString() );
+		return settings;
 	}
 
 	public HashMap< Integer, Map< String, Object > > getObjectMeasurements()
@@ -105,18 +84,16 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 		return objectMeasurements;
 	}
 
-	private void processFile( File file )
+	protected void processFile( File file, Spindle3DSettings settings )
 	{
 		setImageName();
 
 		logStart();
 
 		final RandomAccessibleInterval< R > raiXYCZ = openImage( file );
-
-		tryOpenCellMask( file );
-
-		//final OpService service = context.service( OpService.class );
-		Spindle3DMorphometry morphometry = new Spindle3DMorphometry( settings, opService, scriptService );
+		final RandomAccessibleInterval< BitType > cellMask = tryOpenCellMask( file );
+		Spindle3DMorphometry morphometry =
+				new Spindle3DMorphometry( settings, opService, scriptService );
 		morphometry.setCellMask( cellMask );
 		final String log = morphometry.run( raiXYCZ );
 		Logger.log( log );
@@ -133,11 +110,11 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 
 		if ( log.equals( Spindle3DMeasurements.ANALYSIS_FINISHED ))
 		{
-			if ( settings.showOutputImage == true || saveResults )
+			if ( this.settings.showOutputImage == true || saveResults )
 			{
 				final CompositeImage outputImage = morphometry.createOutputImage();
 
-				if ( settings.showOutputImage == true )
+				if ( this.settings.showOutputImage == true )
 					outputImage.show();
 
 				if ( saveResults )
@@ -162,19 +139,21 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 		return raiXYCZ;
 	}
 
-	private void tryOpenCellMask( File file )
+	private RandomAccessibleInterval< BitType > tryOpenCellMask( File file )
 	{
 		String cellMaskPath = file.getAbsolutePath().replace( ".tif", "_CellMask.tif" );
 		final File cellMaskFile = new File( cellMaskPath );
 		if ( cellMaskFile.exists() )
 		{
 			final RandomAccessibleInterval< R > rai = ImageJFunctions.wrapReal( Utils.openWithBioFormats( cellMaskPath ) );
-			cellMask = Converters.convert( rai, ( i, o ) -> o.set( i.getRealDouble() > 0.5 ? true : false ), new BitType() );
+			RandomAccessibleInterval< BitType > cellMask = Converters.convert( rai, ( i, o ) -> o.set( i.getRealDouble() > 0.5 ? true : false ), new BitType() );
 			Logger.log( "Found cell mask file: " + cellMaskPath );
+			return cellMask;
 		}
 		else
 		{
 			Logger.log( "Did not find cell mask file: " + cellMaskPath );
+			return null;
 		}
 	}
 
@@ -257,5 +236,4 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 				path_inputImage,
 				relativeInputImagePath );
 	}
-
 }

@@ -27,7 +27,7 @@ public class RunAdvancedSpindleMorphometryBatch
 		{
 			if ( ! file.getName().endsWith( ".tif" ) ) continue;
 
-			command.dnaAndTubulinImageFile = file;
+			command.inputImageFile = file;
 			command.outputDirectory = new File( "/Users/tischer/Desktop/Desktop/kletter/multiple-dna" );
 			command.dnaChannelIndexOneBased = 1;
 			command.spindleChannelIndexOneBased = 2;

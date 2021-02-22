@@ -1,5 +1,6 @@
 package de.embl.cba.spindle3d;
 
+import de.embl.cba.morphometry.Algorithms;
 import de.embl.cba.morphometry.Logger;
 import de.embl.cba.morphometry.regions.Regions;
 import net.imglib2.*;
@@ -146,5 +147,16 @@ public abstract class Spindle3DAlgorithms
 
 		Logger.log( "Removed " + numRegionsTouchingBorder + " of " + size + " regions, because of image border contact." );
 		return size - numRegionsTouchingBorder;
+	}
+
+	public static RandomAccessibleInterval< BitType > openFast( RandomAccessibleInterval< BitType > dnaAlignedSpindleMask )
+	{
+		final RandomAccessibleInterval< BitType > downsampled = Algorithms.createNearestNeighborResampledArrayImg( dnaAlignedSpindleMask, new double[]{ 0.2, 0.2, 0.2 } );
+
+		final RandomAccessibleInterval< BitType > opened = Algorithms.open( downsampled, 2 );
+
+		final RandomAccessibleInterval< BitType > openedUpsampled = Algorithms.createNearestNeighborResampledArrayImg( opened, new double[]{ 1 / 0.2, 1 / 0.2, 1 / 0.2 } );
+
+		return openedUpsampled;
 	}
 }

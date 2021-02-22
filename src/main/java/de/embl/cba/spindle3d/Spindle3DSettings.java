@@ -19,6 +19,7 @@ public class Spindle3DSettings<T extends RealType<T> & NativeType< T > >
 	public double spindleFragmentInclusionZone = 3.0; // um;
 	public double axialPoleRefinementRadius = 1.0; // um
 	public double lateralPoleRefinementRadius = 2.0; // um
+	public double voxelSizeForInitialDNAThreshold = 1.5; // um
 
 	@Deprecated // ??
 	public double minimalDnaAndTubulinFragmentsVolume = 1 * 3 * 3; // um^3
@@ -27,18 +28,13 @@ public class Spindle3DSettings<T extends RealType<T> & NativeType< T > >
 
 	public double cellRadius = 6.0; // um
 	public double erosionOfDnaMaskInCalibratedUnits = 1.0; // um
-	@Deprecated
-	public double spindleDerivativeDelta = 1.0; // um
 	public double interestPointsRadius = 0.5; // um
 
 	/**
 	 * Intensity
 	 */
 	public double initialThresholdFactor = 0.5;
-	public double voxelSizeForInitialDNAThreshold = 1.5; // um
 	public int minimalDynamicRange = 7;
-	public double thresholdInUnitsOfBackgroundPeakHalfWidth = 5.0;
-
 
 	/**
 	 * Other
@@ -53,42 +49,28 @@ public class Spindle3DSettings<T extends RealType<T> & NativeType< T > >
 	public long dnaChannelIndex;
 	public long tubulinChannelIndex;
 	public boolean showOutputImage = false;
-	public boolean showMetaphaseClassification = false;
-	@Deprecated
-	public boolean useCATS = false;
-	@Deprecated
-	public File classifier;
-	@Deprecated
-	public CellCenterDetectionMethod cellCenterDetectionMethod;
 	public double spindleThresholdFactor = 1.0;
 	public File roiDetectionMacro;
 
-	@Deprecated
-	public boolean smoothSpindle = false; // TODO PAPER Remove
+	public boolean smoothSpindle = false; // TODO PAPER Remove?
 
-	@Deprecated
-	public enum CellCenterDetectionMethod
-	{
-		None,
-		BlurredDnaImage,
-		BlurredTubulinImage
-	}
-
-	public static final String CCDM_NONE = "None";
-
+	// TODO PAPER Clean this up and make sure everything is added
 	public String toString()
 	{
 		String settings = new String();
 
 		settings += "\n";
 		settings += "## Spindle Morphometry Settings\n";
-		settings += "workingVoxelSize: " + voxelSizeForAnalysis + "\n";
-		settings += "dnaThresholdResolution: " + voxelSizeForInitialDNAThreshold + "\n";
+		settings += "voxelSizeForAnalysis: " + voxelSizeForAnalysis + "\n";
+		settings += "voxelSizeForInitialDNAThreshold: " + voxelSizeForInitialDNAThreshold + "\n";
 		settings += "dnaThresholdFactor: " + initialThresholdFactor + "\n";
 		settings += "spindleThresholdFactor: " + spindleThresholdFactor + "\n";
-		settings += "spindleDerivativeDelta: " + spindleDerivativeDelta + "\n";
+		settings += "spindleFragmentInclusionZone: " + spindleFragmentInclusionZone + "\n";
+
 		settings += "minimalDynamicRange: " + minimalDynamicRange + "\n";
-		settings += "minimalDnaFragmentsVolume: " + minimalDnaAndTubulinFragmentsVolume + "\n";
+		settings += "metaphasePlateWidthDerivativeDelta: " + metaphasePlateWidthDerivativeDelta + "\n";
+		settings += "metaphasePlateLengthDerivativeDelta: " + metaphasePlateLengthDerivativeDelta + "\n";
+
 		settings += "maxCentralObjectRegionsDistance: " + maxCentralObjectRegionsDistance + "\n";
 		settings += "erosionOfDnaMaskInCalibratedUnits: " + erosionOfDnaMaskInCalibratedUnits + "\n";
 
