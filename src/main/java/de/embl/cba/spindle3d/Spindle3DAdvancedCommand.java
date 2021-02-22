@@ -1,15 +1,13 @@
 package de.embl.cba.spindle3d;
 
-import de.embl.cba.morphometry.*;
+import de.embl.cba.morphometry.ImageSuite3D;
+import de.embl.cba.morphometry.Logger;
 import net.imglib2.type.numeric.RealType;
-import org.scijava.ItemVisibility;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
 import java.io.File;
-
-import static de.embl.cba.spindle3d.Spindle3DVersion.VERSION;
 
 
 @Plugin(type = Command.class, menuPath = "Plugins>Spindle3D>Spindle3D Advanced..." )
@@ -21,7 +19,7 @@ public class Spindle3DAdvancedCommand< R extends RealType< R > > extends Spindle
 	@Parameter ( label = "DNA threshold factor" )
 	public double dnaThresholdFactor = settings.initialThresholdFactor;
 
-	@Parameter ( label = "Minimum dynamic range [segmentation threshold gray value]" )
+	@Parameter ( label = "Minimum dynamic range [gray value]" )
 	public int minimalDynamicRange = settings.minimalDynamicRange;
 
 	@Parameter ( label = "Maximal metaphase plate length [um]" )
@@ -51,14 +49,13 @@ public class Spindle3DAdvancedCommand< R extends RealType< R > > extends Spindle
 	public void run()
 	{
 		if ( ! ImageSuite3D.isAvailable() ) return;
-		Spindle3DSettings settings = fetchSettingsFromUI();
-		processFile( inputImageFile, settings );
+		setSettings();
+		processFile( inputImageFile );
 	}
 
 	@Override
-	protected Spindle3DSettings fetchSettingsFromUI()
+	protected void setSettings()
 	{
-		Spindle3DSettings settings = new Spindle3DSettings();
 		settings.smoothSpindle = smoothSpindle;
 		settings.showIntermediateImages = showIntermediateImages;
 		settings.showIntermediatePlots = showIntermediatePlots;
@@ -73,7 +70,5 @@ public class Spindle3DAdvancedCommand< R extends RealType< R > > extends Spindle
 		settings.roiDetectionMacro = macroFile;
 
 		Logger.log( settings.toString() );
-
-		return settings;
 	}
 }

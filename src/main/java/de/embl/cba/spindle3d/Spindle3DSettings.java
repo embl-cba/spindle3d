@@ -61,6 +61,8 @@ public class Spindle3DSettings<T extends RealType<T> & NativeType< T > >
 
 		settings += "\n";
 		settings += "## Spindle Morphometry Settings\n";
+		settings += "dnaChannelIndex: " + dnaChannelIndex + "\n";
+		settings += "tubulinChannelIndex: " + tubulinChannelIndex + "\n";
 		settings += "voxelSizeForAnalysis: " + voxelSizeForAnalysis + "\n";
 		settings += "voxelSizeForInitialDNAThreshold: " + voxelSizeForInitialDNAThreshold + "\n";
 		settings += "dnaThresholdFactor: " + initialThresholdFactor + "\n";

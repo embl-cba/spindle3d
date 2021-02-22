@@ -10,7 +10,7 @@
 
 	<groupId>de.embl.cba</groupId>
 	<artifactId>spindle3d</artifactId>
-	<version>0.7.4-SNAPSHOT</version>
+	<version>0.7.5</version>
 
 	<name>spindle3d</name>
 	<description>Fiji plugin for automated 3d spindle morphometry</description>
@@ -72,7 +72,7 @@
 		<package-name>de.embl.cba</package-name>
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>EMBL</license.copyrightOwners>
-		<scijava.app.directory>/Users/tischer/Desktop/Fiji-Spindle3D.app</scijava.app.directory>
+		<scijava.app.directory>/Users/tischer/Desktop/Fiji/Fiji-Spindle3D.app</scijava.app.directory>
 		<enforcer.skip>true</enforcer.skip>
 	</properties>
 
@@ -110,7 +110,7 @@
 		<dependency>
 			<groupId>de.embl.cba</groupId>
 			<artifactId>imagej-utils</artifactId>
-			<version>0.5.9-SNAPSHOT</version>
+			<version>0.5.9</version>
 		</dependency>
 
 		<dependency>

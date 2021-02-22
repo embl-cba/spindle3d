@@ -65,18 +65,17 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 	{
 		DebugTools.setRootLevel("OFF"); // Bio-Formats
 		if ( ! ImageSuite3D.isAvailable() ) return;
-		Spindle3DSettings settings = fetchSettingsFromUI();
-		processFile( inputImageFile, settings );
+		setSettings();
+		processFile( inputImageFile );
 	}
 
-	protected Spindle3DSettings fetchSettingsFromUI()
+	protected void setSettings()
 	{
 		settings.showIntermediateImages = showIntermediateImages;
 		settings.showIntermediatePlots = showIntermediatePlots;
 		settings.outputDirectory = outputDirectory;
 		settings.version = version;
 		Logger.log( settings.toString() );
-		return settings;
 	}
 
 	public HashMap< Integer, Map< String, Object > > getObjectMeasurements()
@@ -84,7 +83,7 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 		return objectMeasurements;
 	}
 
-	protected void processFile( File file, Spindle3DSettings settings )
+	protected void processFile( File file )
 	{
 		setImageName();
 
@@ -127,7 +126,7 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 		logEnd();
 	}
 
-	private RandomAccessibleInterval< R > openImage( File file )
+	protected RandomAccessibleInterval< R > openImage( File file )
 	{
 		final ImagePlus imagePlus = Utils.openWithBioFormats( file.toString() );
 		setSettingsFromImagePlus( imagePlus );
@@ -139,7 +138,7 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 		return raiXYCZ;
 	}
 
-	private RandomAccessibleInterval< BitType > tryOpenCellMask( File file )
+	protected RandomAccessibleInterval< BitType > tryOpenCellMask( File file )
 	{
 		String cellMaskPath = file.getAbsolutePath().replace( ".tif", "_CellMask.tif" );
 		final File cellMaskFile = new File( cellMaskPath );
@@ -157,36 +156,36 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 		}
 	}
 
-	private void setImageName()
+	protected void setImageName()
 	{
 		imageName = inputImageFile.getName().replace( ".tif", "" );
 		imageName = inputImageFile.getName().replace( ".ome", "" );
 		imageName = inputImageFile.getName().replace( ".zip", "" );
 	}
 
-	private void logEnd()
+	protected void logEnd()
 	{
 		Logger.log( "Done!" );
 	}
 
-	private void logStart()
+	protected void logStart()
 	{
-		Logger.log( "## Spindle Morphometry Measurement" );
-		Logger.log( "Processing file " + imageName );
+		Logger.log( "## Spindle Morphometry Measurements" );
+		Logger.log( "Processing file: " + inputImageFile );
 	}
 
-	private void saveMeasurements( Spindle3DMorphometry morphometry )
+	protected void saveMeasurements( Spindle3DMorphometry morphometry )
 	{
 		final JTable jTable = Measurements.asTable( objectMeasurements );
 
 		final File tableOutputFile = new File( getOutputDirectory() + "measurements.txt" );
 
-		Logger.log( "Saving:\n" + tableOutputFile );
+		Logger.log( "Saving measurements table:\n" + tableOutputFile );
 
 		Tables.saveTable( jTable, tableOutputFile );
 	}
 
-	private String getOutputDirectory()
+	protected String getOutputDirectory()
 	{
 		return outputDirectory
 				+ File.separator
@@ -194,14 +193,14 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 				+ File.separator;
 	}
 
-	private void setSettingsFromImagePlus( ImagePlus imagePlus )
+	protected void setSettingsFromImagePlus( ImagePlus imagePlus )
 	{
 		settings.inputCalibration = Utils.getCalibration( imagePlus );
 		settings.imagePlusCalibration = imagePlus.getCalibration();
 		settings.inputDataSetName = imagePlus.getTitle();
 	}
 
-	private void saveOutputImageAndAddImagePathsToMeasurements( ImagePlus imagePlus )
+	protected void saveOutputImageAndAddImagePathsToMeasurements( ImagePlus imagePlus )
 	{
 		final Path parentPath = inputImageFilesParentDirectory.toPath();
 
@@ -209,11 +208,11 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 
 		addImagePathToMeasurements( parentPath, outputImageFile, objectMeasurements, "Path_OutputImage" );
 
-		Logger.log( "Saving:\n" + outputImageFile );
+		Logger.log( "Saving output image:\n" + outputImageFile );
 		IJ.saveAs( imagePlus, "ZIP", outputImageFile.toString() );
 	}
 
-	private static void addImagePathToMeasurements(
+	protected static void addImagePathToMeasurements(
 			Path parentPath,
 			File inputImageFile,
 			HashMap< Integer, Map< String, Object > > objectMeasurements,
