@@ -18,7 +18,6 @@ import net.imglib2.type.numeric.RealType;
 import org.scijava.ItemVisibility;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
-import org.scijava.plugin.Plugin;
 import org.scijava.script.ScriptService;
 
 import javax.swing.*;
@@ -27,8 +26,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-@Plugin(type = Command.class, menuPath = "Plugins>Spindle3D>Spindle3D..." )
-public class Spindle3DCommand< R extends RealType< R > > implements Command
+public abstract class Spindle3DCommand< R extends RealType< R > > implements Command
 {
 	public Spindle3DSettings settings = new Spindle3DSettings();
 
@@ -37,9 +35,6 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 
 	@Parameter
 	public ScriptService scriptService;
-
-	@Parameter ( label = "Input Image File" )
-	public File inputImageFile;
 
 	@Parameter ( label = "Output Directory", style = "directory" )
 	public File outputDirectory;
@@ -57,17 +52,9 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 	public boolean showIntermediatePlots = false;
 	public boolean saveResults = true;
 
-	private File inputImageFilesParentDirectory = new File("/" );
-	private String imageName;
-	private HashMap< Integer, Map< String, Object > > objectMeasurements;
-
-	public void run()
-	{
-		DebugTools.setRootLevel("OFF"); // Bio-Formats
-		if ( ! ImageSuite3D.isAvailable() ) return;
-		setSettings();
-		processFile( inputImageFile );
-	}
+	protected File inputImageFilesParentDirectory = new File("/" );
+	protected String imageName;
+	protected HashMap< Integer, Map< String, Object > > objectMeasurements;
 
 	protected void setSettings()
 	{
@@ -83,16 +70,35 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 		return objectMeasurements;
 	}
 
-	protected void processFile( File file )
+
+	protected void processFile( String imagePath )
 	{
-		setImageName();
+		setImageName( new File( imagePath ).getName() );
 
-		logStart();
+		final ImagePlus imagePlus = Utils.openWithBioFormats( imagePath );
+		imagePlus.setTitle( imageName );
 
-		final RandomAccessibleInterval< R > raiXYCZ = openImage( file );
-		final RandomAccessibleInterval< BitType > cellMask = tryOpenCellMask( file );
-		Spindle3DMorphometry morphometry =
-				new Spindle3DMorphometry( settings, opService, scriptService );
+		final RandomAccessibleInterval< BitType > cellMask = tryOpenCellMask( imagePath );
+
+		processImagePlus( imagePlus, cellMask );
+	}
+
+	protected boolean fetchSettingAndInit()
+	{
+		DebugTools.setRootLevel( "OFF" ); // Bio-Formats
+		if ( ! ImageSuite3D.isAvailable() ) return false;
+		setSettings();
+		return true;
+	}
+
+	protected void processImagePlus( ImagePlus imagePlus, RandomAccessibleInterval< BitType > cellMask )
+	{
+		setImageName( imagePlus.getTitle() );
+		logStart( imageName );
+
+		final RandomAccessibleInterval< R > raiXYCZ = asRAIXYCZ( imagePlus );
+
+		Spindle3DMorphometry morphometry = new Spindle3DMorphometry( settings, opService, scriptService );
 		morphometry.setCellMask( cellMask );
 		final String log = morphometry.run( raiXYCZ );
 		Logger.log( log );
@@ -101,7 +107,7 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 
 		addImagePathToMeasurements(
 				inputImageFilesParentDirectory.toPath(),
-				inputImageFile,
+				new File( imagePlus.getOriginalFileInfo().directory, imagePlus.getOriginalFileInfo().fileName ),
 				objectMeasurements,
 				"Path_InputImage" );
 
@@ -126,9 +132,8 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 		logEnd();
 	}
 
-	protected RandomAccessibleInterval< R > openImage( File file )
+	protected RandomAccessibleInterval< R > asRAIXYCZ( ImagePlus imagePlus )
 	{
-		final ImagePlus imagePlus = Utils.openWithBioFormats( file.toString() );
 		setSettingsFromImagePlus( imagePlus );
 
 		final RandomAccessibleInterval< R > raiXYCZ = ImageJFunctions.wrapReal( imagePlus );
@@ -138,9 +143,10 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 		return raiXYCZ;
 	}
 
-	protected RandomAccessibleInterval< BitType > tryOpenCellMask( File file )
+	protected RandomAccessibleInterval< BitType > tryOpenCellMask( String imagePath )
 	{
-		String cellMaskPath = file.getAbsolutePath().replace( ".tif", "_CellMask.tif" );
+		final String cellMaskPath = imagePath.replace( ".tif", "_CellMask.tif" );
+
 		final File cellMaskFile = new File( cellMaskPath );
 		if ( cellMaskFile.exists() )
 		{
@@ -156,11 +162,11 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 		}
 	}
 
-	protected void setImageName()
+	protected void setImageName( String name )
 	{
-		imageName = inputImageFile.getName().replace( ".tif", "" );
-		imageName = inputImageFile.getName().replace( ".ome", "" );
-		imageName = inputImageFile.getName().replace( ".zip", "" );
+		imageName = name.replace( ".tif", "" );
+		imageName = imageName.replace( ".ome", "" );
+		imageName = imageName.replace( ".zip", "" );
 	}
 
 	protected void logEnd()
@@ -168,10 +174,10 @@ public class Spindle3DCommand< R extends RealType< R > > implements Command
 		Logger.log( "Done!" );
 	}
 
-	protected void logStart()
+	protected void logStart( String imageName )
 	{
-		Logger.log( "## Spindle Morphometry Measurements" );
-		Logger.log( "Processing file: " + inputImageFile );
+		Logger.log( "\n## Spindle Morphometry Measurements" );
+		Logger.log( "Processing image: " + imageName );
 	}
 
 	protected void saveMeasurements( Spindle3DMorphometry morphometry )

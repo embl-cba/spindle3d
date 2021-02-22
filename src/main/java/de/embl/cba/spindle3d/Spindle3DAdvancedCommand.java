@@ -1,6 +1,5 @@
 package de.embl.cba.spindle3d;
 
-import de.embl.cba.morphometry.ImageSuite3D;
 import de.embl.cba.morphometry.Logger;
 import net.imglib2.type.numeric.RealType;
 import org.scijava.command.Command;
@@ -10,9 +9,12 @@ import org.scijava.plugin.Plugin;
 import java.io.File;
 
 
-@Plugin(type = Command.class, menuPath = "Plugins>Spindle3D>Spindle3D Advanced..." )
+@Plugin(type = Command.class, menuPath = "Plugins>Spindle3D>Spindle3D Image from File (Advanced)..." )
 public class Spindle3DAdvancedCommand< R extends RealType< R > > extends Spindle3DCommand< R >
 {
+	@Parameter ( label = "Input Image File" )
+	public File inputImageFile;
+
 	@Parameter ( label = "Voxel size for analysis" )
 	public double voxelSizeForAnalysis = settings.voxelSizeForAnalysis;
 
@@ -48,9 +50,8 @@ public class Spindle3DAdvancedCommand< R extends RealType< R > > extends Spindle
 	@Override
 	public void run()
 	{
-		if ( ! ImageSuite3D.isAvailable() ) return;
-		setSettings();
-		processFile( inputImageFile );
+		if ( ! fetchSettingAndInit() ) return;
+		processFile( inputImageFile.toString() );
 	}
 
 	@Override

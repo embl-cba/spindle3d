@@ -1,4 +1,5 @@
 import de.embl.cba.spindle3d.Spindle3DCommand;
+import de.embl.cba.spindle3d.Spindle3DFileCommand;
 import net.imagej.ImageJ;
 import net.imglib2.type.numeric.RealType;
 
@@ -11,7 +12,7 @@ public class RunSpindleMorphometry
 		final ImageJ ij = new ImageJ();
 		ij.ui().showUI();
 
-		final Spindle3DCommand< R > command = new Spindle3DCommand<>();
+		final Spindle3DFileCommand< R > command = new Spindle3DFileCommand<>();
 		command.opService = ij.op();
 		command.scriptService = ij.script();
 

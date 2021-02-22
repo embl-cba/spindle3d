@@ -940,7 +940,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 					"distance to center", "d/dx DNA intensity along DNA axis" );
 		}
 
-		logDnaAxialThreshold( dnaProfileAlongDnaAxis, dnaAxialBoundaries );
+		//logDnaAxialThreshold( dnaProfileAlongDnaAxis, dnaAxialBoundaries );
 	}
 
 	private void logDnaAxialThreshold(
