@@ -1,10 +1,6 @@
-import de.embl.cba.spindle3d.Spindle3DAdvancedCommand;
-import de.embl.cba.spindle3d.Spindle3DCommand;
+import de.embl.cba.spindle3d.command.Spindle3DAdvancedCommand;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
-import net.imglib2.type.numeric.RealType;
-
-import java.io.File;
 
 public class RunSpindle3DAdvancedCommand
 {

@@ -1,7 +1,6 @@
 package develop;
 
-import de.embl.cba.spindle3d.Spindle3DCommand;
-import de.embl.cba.spindle3d.Spindle3DFileCommand;
+import de.embl.cba.spindle3d.command.Spindle3DProcessFileCommand;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
 import net.imglib2.type.numeric.RealType;
@@ -19,7 +18,7 @@ public class TestSpindleAxialExtendUnderestimation
 		final ImageJ ij = new ImageJ();
 		ij.ui().showUI();
 
-		final Spindle3DFileCommand< R > command = new Spindle3DFileCommand<>();
+		final Spindle3DProcessFileCommand< R > command = new Spindle3DProcessFileCommand<>();
 		command.opService = ij.op();
 
 //		command.inputImageFile = new File( "/Users/tischer/Downloads/Incorrect-t82-crop.tif" );

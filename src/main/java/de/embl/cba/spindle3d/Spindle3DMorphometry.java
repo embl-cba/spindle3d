@@ -134,18 +134,13 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 	{
 		measurements.version = settings.version;
 
-		/**
-		 * TODO:
-		 * - maybe smooth the dna and tubulin image to reduce noise?
-		 * - for low dynamic ranges, the smoothing should be done in a doubletype image
-		 */
-
 		createIsotropicallyResampledImages();
 
+		cellMask = settings.cellMask;
 		if ( cellMask == null )
 			cellMask = tryCreateCellMask( settings );
 
-		measurements.dnaInitialThreshold = measureInitialThreshold( "DNA", dna, settings.initialThresholdFactor, cellMask );
+		measurements.dnaInitialThreshold = measureInitialThreshold( "DNA", dna, cellMask );
 
 		if ( measurements.dnaInitialThreshold < settings.minimalDynamicRange )
 			return Spindle3DMeasurements.ANALYSIS_INTERRUPTED_LOW_DYNAMIC_DNA;
@@ -153,6 +148,11 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		initialDnaMask = createInitialDnaMask( dna, measurements.dnaInitialThreshold );
 
 		dnaEllipsoidVectors = determineDnaAxes( initialDnaMask );
+
+		if ( settings.spindlePolePositionsInPixels != null )
+		{
+			Logger.log( "Using given spindle pole positions to compute shortest DNA axis" );
+		}
 
 		rescaledToDnaAlignmentTransform = computeDnaAlignmentTransformAndAlignImages( dnaEllipsoidVectors );
 
@@ -757,7 +757,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		rescaledVolumes = new ArrayList<>();
 
-		final double[] scalingFactors = getScalingFactors( settings.inputCalibration, settings.voxelSizeForAnalysis );
+		final double[] scalingFactors = Transforms.getScalingFactors( settings.inputCalibration, settings.voxelSizeForAnalysis );
 
 		for ( int c = 0; c < numChannels; c++ )
 		{
@@ -787,7 +787,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		}
 	}
 
-	public double measureInitialThreshold( final String channel, RandomAccessibleInterval< R > rai, double thresholdFactor, RandomAccessibleInterval< BitType > mask )
+	private double measureInitialThreshold( final String channel, RandomAccessibleInterval< R > rai, RandomAccessibleInterval< BitType > mask )
 	{
 		final double[] scalingFactors = getScalingFactors( new double[]{
 						settings.voxelSizeForAnalysis,
@@ -799,7 +799,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		if ( mask != null )
 		{
-			mask = Scalings.createResampledArrayImg( mask, scalingFactors );
+			mask = Scalings.createRescaledArrayImg( mask, scalingFactors );
 			//Viewers.showRai3dWithImageJ( mask, "DNA Threshold Mask" );
 			//Viewers.showRai3dWithImageJ( downscaled, "DNA Threshold" );
 		}
@@ -817,9 +817,9 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		Logger.log( channel + " downscaled minimum value: " + minMaxValues.getA()  );
 		Logger.log( channel + " downscaled maximum value: " + minMaxValues.getB()  );
-		Logger.log( channel + " initial threshold factor: " + thresholdFactor );
-		double initialDnaThreshold = ( minMaxValues.getB() - minMaxValues.getA() ) * thresholdFactor + minMaxValues.getA() ;
-		Logger.log( channel + " initial threshold = (max-min)*factor + min: " + initialDnaThreshold );
+		Logger.log( channel + " initial threshold factor: " + settings.initialThresholdFactor );
+		double initialDnaThreshold = ( minMaxValues.getB() - minMaxValues.getA() ) * settings.initialThresholdFactor + minMaxValues.getA() ;
+		Logger.log( channel + " initial threshold = ( max - min ) * factor + min: " + initialDnaThreshold );
 
 		return initialDnaThreshold;
 	}
@@ -1340,8 +1340,6 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 				settings.voxelSizeForAnalysis,
 				new BitType( true ) );
 
-		final double distance = LinAlgHelpers.distance( spindlePoles.get( 0 ), spindlePoles.get( 1 ) );
-
 		for ( double[] spindlePole : spindlePoles )
 			drawPoint(
 					interestPointsImage,
@@ -1353,11 +1351,6 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		return interestPointsImage;
 	}
 
-	public void setCellMask( RandomAccessibleInterval< BitType > cellMask )
-	{
-		this.cellMask = cellMask;
-	}
-
 	class ProfileAndRadius
 	{
 		CoordinatesAndValues profile;
@@ -1365,17 +1358,6 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		int radiusIndex;
 	}
 
-	/**
-	 *
-	 * TODO: Also limit the computations axially?!
-	 *
-	 *
-	 * @param image
-	 * @param name
-	 * @param derivativeDelta
-	 * @param maxCenterDistance
-	 * @return
-	 */
 	private ProfileAndRadius measureRadialProfileAndRadius(
 			final RandomAccessibleInterval< R > image,
 			final String name,

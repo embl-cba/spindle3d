@@ -6,11 +6,11 @@ import org.junit.Test;
 
 import java.io.File;
 
-public class TestSpindleMorphometryWithCellMask
+public class TestSpindleMorphometryWithSpindlePoleROIs
 {
 	public static void main( String[] args )
 	{
-		new TestSpindleMorphometryWithCellMask().test();
+		new TestSpindleMorphometryWithSpindlePoleROIs().test();
 	}
 
 	@Test
@@ -24,7 +24,7 @@ public class TestSpindleMorphometryWithCellMask
 		command.scriptService = ij.script();
 
 		// Spindle touching objects
-		command.inputImageFile = new File("src/test/resources/test/with-cell-mask/20210204_HeLa_MCB309_006-1.tif" );
+		command.inputImageFile = new File("src/test/resources/test/with-spindle-pole-rois/pointROIs.tif" );
 
 		command.outputDirectory = new File( "src/test/resources/test/output" );
 		command.spindleChannelIndexOneBased = 1;

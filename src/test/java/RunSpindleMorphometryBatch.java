@@ -1,6 +1,4 @@
-import de.embl.cba.spindle3d.Spindle3DAdvancedCommand;
-import de.embl.cba.spindle3d.Spindle3DCommand;
-import de.embl.cba.spindle3d.Spindle3DFileCommand;
+import de.embl.cba.spindle3d.command.Spindle3DProcessFileCommand;
 import de.embl.cba.tables.FileUtils;
 import net.imagej.ImageJ;
 import net.imglib2.type.numeric.RealType;
@@ -15,7 +13,7 @@ public class RunSpindleMorphometryBatch
 		final ImageJ ij = new ImageJ();
 		ij.ui().showUI();
 
-		final Spindle3DFileCommand< R > command = new Spindle3DFileCommand<>();
+		final Spindle3DProcessFileCommand< R > command = new Spindle3DProcessFileCommand<>();
 		command.opService = ij.op();
 
 		List< File > fileList = FileUtils.getFileList( new File( "/Users/tischer/Documents/spindle3d/src/test/resources/multiple-dna" ), ".*", false );

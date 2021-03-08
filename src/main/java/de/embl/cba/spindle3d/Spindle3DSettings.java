@@ -1,7 +1,9 @@
 package de.embl.cba.spindle3d;
 
 import ij.measure.Calibration;
+import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.NativeType;
+import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
 
 import java.io.File;
@@ -53,6 +55,8 @@ public class Spindle3DSettings<T extends RealType<T> & NativeType< T > >
 	public File roiDetectionMacro;
 
 	public boolean smoothSpindle = false; // TODO PAPER Remove?
+	public int[][] spindlePolePositionsInPixels;
+	public RandomAccessibleInterval< BitType > cellMask;
 
 	// TODO PAPER Clean this up and make sure everything is added
 	public String toString()

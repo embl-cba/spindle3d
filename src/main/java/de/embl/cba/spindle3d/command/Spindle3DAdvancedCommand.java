@@ -1,6 +1,7 @@
-package de.embl.cba.spindle3d;
+package de.embl.cba.spindle3d.command;
 
 import de.embl.cba.morphometry.Logger;
+import de.embl.cba.spindle3d.Spindle3DCommand;
 import net.imglib2.type.numeric.RealType;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
@@ -9,7 +10,7 @@ import org.scijava.plugin.Plugin;
 import java.io.File;
 
 
-@Plugin(type = Command.class, menuPath = "Plugins>Spindle3D>Spindle3D Image from File (Advanced)..." )
+@Plugin(type = Command.class, menuPath = "Plugins>Spindle3D>Spindle3D Process File (Advanced)..." )
 public class Spindle3DAdvancedCommand< R extends RealType< R > > extends Spindle3DCommand< R >
 {
 	@Parameter ( label = "Input Image File" )

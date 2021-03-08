@@ -1,4 +1,4 @@
-import de.embl.cba.spindle3d.Spindle3DAdvancedCommand;
+import de.embl.cba.spindle3d.command.Spindle3DAdvancedCommand;
 import de.embl.cba.tables.FileUtils;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;

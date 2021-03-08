@@ -8,6 +8,9 @@ import de.embl.cba.tables.Tables;
 import ij.CompositeImage;
 import ij.IJ;
 import ij.ImagePlus;
+import ij.gui.Overlay;
+import ij.gui.PointRoi;
+import ij.gui.Roi;
 import loci.common.DebugTools;
 import net.imagej.ops.OpService;
 import net.imglib2.RandomAccessibleInterval;
@@ -21,6 +24,7 @@ import org.scijava.plugin.Parameter;
 import org.scijava.script.ScriptService;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -75,7 +79,18 @@ public abstract class Spindle3DCommand< R extends RealType< R > > implements Com
 	{
 		setImageName( new File( imagePath ).getName() );
 
-		final ImagePlus imagePlus = Utils.openWithBioFormats( imagePath );
+		ImagePlus imagePlus;
+		try
+		{
+			// because Bio-Formats does not read the imageJ Rois.
+			imagePlus = IJ.openImage( imagePath );
+
+		}
+		catch ( Exception e )
+		{
+			imagePlus = Utils.openWithBioFormats( imagePath );
+		}
+
 		imagePlus.setTitle( imageName );
 
 		final RandomAccessibleInterval< BitType > cellMask = tryOpenCellMask( imagePath );
@@ -98,8 +113,26 @@ public abstract class Spindle3DCommand< R extends RealType< R > > implements Com
 
 		final RandomAccessibleInterval< R > raiXYCZ = asRAIXYCZ( imagePlus );
 
+		final Roi roi = imagePlus.getRoi();
+		if ( roi != null && roi instanceof PointRoi )
+		{
+			if ( roi.getContainedPoints().length == 2 )
+			{
+				settings.spindlePolePositionsInPixels = new int[ 2 ][ 3 ];
+
+				for ( int i = 0; i < 2; i++ )
+				{
+					final int z = ( ( PointRoi ) roi ).getPointPosition( i );
+					final Point point = roi.getContainedPoints()[ i ];
+					settings.spindlePolePositionsInPixels[ 0 ] = new int[]{ point.x, point.y, z };
+				}
+			}
+		}
+
+		settings.cellMask = cellMask;
 		Spindle3DMorphometry morphometry = new Spindle3DMorphometry( settings, opService, scriptService );
 		morphometry.setCellMask( cellMask );
+
 		final String log = morphometry.run( raiXYCZ );
 		Logger.log( log );
 
