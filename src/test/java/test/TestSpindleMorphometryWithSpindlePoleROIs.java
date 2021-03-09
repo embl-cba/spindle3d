@@ -27,8 +27,8 @@ public class TestSpindleMorphometryWithSpindlePoleROIs
 		command.inputImageFile = new File("src/test/resources/test/with-spindle-pole-rois/pointROIs.tif" );
 
 		command.outputDirectory = new File( "src/test/resources/test/output" );
-		command.spindleChannelIndexOneBased = 1;
-		command.dnaChannelIndexOneBased = 2;
+		command.spindleChannelIndexOneBased = 2;
+		command.dnaChannelIndexOneBased = 1;
 		command.showIntermediateImages = false;
 		command.showIntermediatePlots = false;
 		command.saveResults = true;

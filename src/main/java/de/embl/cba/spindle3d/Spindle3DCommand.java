@@ -8,7 +8,6 @@ import de.embl.cba.tables.Tables;
 import ij.CompositeImage;
 import ij.IJ;
 import ij.ImagePlus;
-import ij.gui.Overlay;
 import ij.gui.PointRoi;
 import ij.gui.Roi;
 import loci.common.DebugTools;
@@ -108,30 +107,15 @@ public abstract class Spindle3DCommand< R extends RealType< R > > implements Com
 
 	protected void processImagePlus( ImagePlus imagePlus, RandomAccessibleInterval< BitType > cellMask )
 	{
+		settings.cellMask = cellMask;
 		setImageName( imagePlus.getTitle() );
 		logStart( imageName );
 
 		final RandomAccessibleInterval< R > raiXYCZ = asRAIXYCZ( imagePlus );
 
-		final Roi roi = imagePlus.getRoi();
-		if ( roi != null && roi instanceof PointRoi )
-		{
-			if ( roi.getContainedPoints().length == 2 )
-			{
-				settings.spindlePolePositionsInPixels = new int[ 2 ][ 3 ];
+		setSpindlePolePositions( imagePlus );
 
-				for ( int i = 0; i < 2; i++ )
-				{
-					final int z = ( ( PointRoi ) roi ).getPointPosition( i );
-					final Point point = roi.getContainedPoints()[ i ];
-					settings.spindlePolePositionsInPixels[ 0 ] = new int[]{ point.x, point.y, z };
-				}
-			}
-		}
-
-		settings.cellMask = cellMask;
 		Spindle3DMorphometry morphometry = new Spindle3DMorphometry( settings, opService, scriptService );
-		morphometry.setCellMask( cellMask );
 
 		final String log = morphometry.run( raiXYCZ );
 		Logger.log( log );
@@ -163,6 +147,25 @@ public abstract class Spindle3DCommand< R extends RealType< R > > implements Com
 		if ( saveResults ) saveMeasurements( morphometry );
 
 		logEnd();
+	}
+
+	private void setSpindlePolePositions( ImagePlus imagePlus )
+	{
+		final Roi roi = imagePlus.getRoi();
+		if ( roi != null && roi instanceof PointRoi )
+		{
+			if ( roi.getContainedPoints().length == 2 )
+			{
+				settings.manualDnaAxisPositions = new double[ 2 ][ 3 ];
+
+				for ( int i = 0; i < 2; i++ )
+				{
+					final int z = ( ( PointRoi ) roi ).getPointPosition( i );
+					final Point point = roi.getContainedPoints()[ i ];
+					settings.manualDnaAxisPositions[ i ] = new double[]{ point.x, point.y, z };
+				}
+			}
+		}
 	}
 
 	protected RandomAccessibleInterval< R > asRAIXYCZ( ImagePlus imagePlus )

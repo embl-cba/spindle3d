@@ -3,8 +3,10 @@ package de.embl.cba.spindle3d;
 import de.embl.cba.morphometry.Algorithms;
 import de.embl.cba.morphometry.Logger;
 import de.embl.cba.morphometry.regions.Regions;
+import de.embl.cba.transforms.utils.Transforms;
 import net.imglib2.*;
 import net.imglib2.algorithm.labeling.ConnectedComponents;
+import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.roi.labeling.LabelRegion;
 import net.imglib2.roi.labeling.LabelRegionCursor;
@@ -13,7 +15,6 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
-import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
@@ -151,12 +152,27 @@ public abstract class Spindle3DAlgorithms
 
 	public static RandomAccessibleInterval< BitType > openFast( RandomAccessibleInterval< BitType > dnaAlignedSpindleMask )
 	{
-		final RandomAccessibleInterval< BitType > downsampled = Algorithms.createNearestNeighborResampledArrayImg( dnaAlignedSpindleMask, new double[]{ 0.2, 0.2, 0.2 } );
+		final RandomAccessibleInterval< BitType > downSampled = Algorithms.createNearestNeighborResampledArrayImg( dnaAlignedSpindleMask, new double[]{ 0.2, 0.2, 0.2 } );
 
-		final RandomAccessibleInterval< BitType > opened = Algorithms.open( downsampled, 2 );
+		final RandomAccessibleInterval< BitType > opened = Algorithms.open( downSampled, 2 );
 
-		final RandomAccessibleInterval< BitType > openedUpsampled = Algorithms.createNearestNeighborResampledArrayImg( opened, new double[]{ 1 / 0.2, 1 / 0.2, 1 / 0.2 } );
+		final RandomAccessibleInterval< BitType > openedUpSampled = Algorithms.createNearestNeighborResampledArrayImg( opened, new double[]{ 1 / 0.2, 1 / 0.2, 1 / 0.2 } );
 
-		return openedUpsampled;
+		return openedUpSampled;
+	}
+
+	public static AffineTransform3D createShortestAxisAlignmentTransform( double[] center, double[] array )
+	{
+		AffineTransform3D translation = new AffineTransform3D();
+		translation.translate( center );
+		translation = translation.inverse();
+
+		final double[] zAxis = new double[]{ 0, 0, 1 };
+		final double[] shortestAxis = array;
+		AffineTransform3D rotation = Transforms.getRotationTransform3D( zAxis, shortestAxis );
+
+		AffineTransform3D combinedTransform = translation.preConcatenate( rotation );
+
+		return combinedTransform;
 	}
 }

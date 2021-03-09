@@ -11,7 +11,7 @@ import java.util.Map;
 @Plugin(type = Command.class, menuPath = "Plugins>Spindle3D>Spindle3D Download Example Image..." )
 public class Spindle3DDownloadSampleImageCommand implements Command
 {
-	public static final String HELA = "HeLa--Ch1-Tubulin--Ch2-DNA";
+	public static final String HELA = "Mouse embryonic stem cell expressing GFP-tagged tubulin -- Ch1 Tubulin Ch2 DNA";
 
 	@Parameter ( label = "Image", choices = { HELA } )
 	String imageName;
