@@ -17,6 +17,7 @@ import net.imglib2.converter.Converters;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
+import org.apache.commons.io.FilenameUtils;
 import org.scijava.ItemVisibility;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
@@ -108,7 +109,9 @@ public abstract class Spindle3DCommand< R extends RealType< R > > implements Com
 	protected void processImagePlus( ImagePlus imagePlus, RandomAccessibleInterval< BitType > cellMask )
 	{
 		settings.cellMask = cellMask;
+
 		setImageName( imagePlus.getTitle() );
+
 		logStart( imageName );
 
 		final RandomAccessibleInterval< R > raiXYCZ = asRAIXYCZ( imagePlus );
@@ -118,6 +121,7 @@ public abstract class Spindle3DCommand< R extends RealType< R > > implements Com
 		Spindle3DMorphometry morphometry = new Spindle3DMorphometry( settings, opService, scriptService );
 
 		final String log = morphometry.run( raiXYCZ );
+
 		Logger.log( log );
 
 		objectMeasurements = morphometry.getObjectMeasurements();
@@ -156,13 +160,13 @@ public abstract class Spindle3DCommand< R extends RealType< R > > implements Com
 		{
 			if ( roi.getContainedPoints().length == 2 )
 			{
-				settings.manualDnaAxisPositions = new double[ 2 ][ 3 ];
+				settings.manualSpindleAxisPositions = new double[ 2 ][ 3 ];
 
 				for ( int i = 0; i < 2; i++ )
 				{
 					final int z = ( ( PointRoi ) roi ).getPointPosition( i );
 					final Point point = roi.getContainedPoints()[ i ];
-					settings.manualDnaAxisPositions[ i ] = new double[]{ point.x, point.y, z };
+					settings.manualSpindleAxisPositions[ i ] = new double[]{ point.x, point.y, z };
 				}
 			}
 		}
@@ -181,10 +185,10 @@ public abstract class Spindle3DCommand< R extends RealType< R > > implements Com
 
 	protected RandomAccessibleInterval< BitType > tryOpenCellMask( String imagePath )
 	{
-		final String cellMaskPath = imagePath.replace( ".tif", "_CellMask.tif" );
+		final String extension = FilenameUtils.getExtension( imagePath );
+		final String cellMaskPath = imagePath.replace( extension, "_CellMask." + extension );
 
-		final File cellMaskFile = new File( cellMaskPath );
-		if ( cellMaskFile.exists() )
+		if ( new File( cellMaskPath ).exists() )
 		{
 			final RandomAccessibleInterval< R > rai = ImageJFunctions.wrapReal( Utils.openWithBioFormats( cellMaskPath ) );
 			RandomAccessibleInterval< BitType > cellMask = Converters.convert( rai, ( i, o ) -> o.set( i.getRealDouble() > 0.5 ? true : false ), new BitType() );

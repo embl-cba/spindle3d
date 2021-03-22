@@ -54,8 +54,8 @@ public class Spindle3DSettings<T extends RealType<T> & NativeType< T > >
 	public double spindleThresholdFactor = 1.0;
 	public File roiDetectionMacro;
 
-	public boolean smoothSpindle = false; // TODO PAPER Remove?
-	public double[][] manualDnaAxisPositions;
+	public boolean smoothSpindle = false;
+	public double[][] manualSpindleAxisPositions;
 	public RandomAccessibleInterval< BitType > cellMask;
 
 	// TODO PAPER Clean this up and make sure everything is added

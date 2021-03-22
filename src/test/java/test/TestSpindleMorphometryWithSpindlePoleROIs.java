@@ -1,6 +1,7 @@
 package test;
 
 import de.embl.cba.spindle3d.command.Spindle3DProcessFileCommand;
+import loci.common.DebugTools;
 import net.imagej.ImageJ;
 import org.junit.Test;
 
@@ -16,8 +17,9 @@ public class TestSpindleMorphometryWithSpindlePoleROIs
 	@Test
 	public void test()
 	{
+		DebugTools.setRootLevel("OFF");
+
 		final ImageJ ij = new ImageJ();
-		ij.ui().showUI();
 
 		final Spindle3DProcessFileCommand< ? > command = new Spindle3DProcessFileCommand<>();
 		command.opService = ij.op();
@@ -31,7 +33,7 @@ public class TestSpindleMorphometryWithSpindlePoleROIs
 		command.dnaChannelIndexOneBased = 1;
 		command.showIntermediateImages = false;
 		command.showIntermediatePlots = false;
-		command.saveResults = true;
+		command.saveResults = false;
 		command.run();
 	}
 }

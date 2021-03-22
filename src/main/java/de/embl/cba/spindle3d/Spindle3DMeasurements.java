@@ -13,12 +13,12 @@ public class Spindle3DMeasurements
 	public static final String SEP = "_";
 
 	public static final int ALIGNED_DNA_AXIS = 2;
-
-	public static final String ANALYSIS_INTERRUPTED_LOW_DYNAMIC_DNA =
-			"Analysis interrupted: Too low dynamic range in DNA image";
-	public static final String ANALYSIS_INTERRUPTED_LOW_DYNAMIC_TUBULIN =
-			"Analysis interrupted: Too low dynamic range in tubulin image";
 	public static final String ANALYSIS_FINISHED = "Analysis finished.";
+
+	// define constants to be accessible in the tests
+	public static final String SPINDLE_LENGTH = addLengthUnit( "Spindle_Length" );
+	public static final String SPINDLE_WIDTH_AVG = addLengthUnit( "Spindle_Width_Avg" );
+	public static final String SPINDLE_ANGLE_DEGREES = "Spindle_Angle_Degrees";
 
 	public Double metaphasePlateLength = Double.NaN;
 	public Double metaphasePlateWidth = Double.NaN;
@@ -39,12 +39,14 @@ public class Spindle3DMeasurements
 	public Double dnaInitialThreshold = Double.NaN;
 	public String version;
 	public Double spindleIntensityVariation = Double.NaN;
-	public Double spindleSumIntensityCorrected = Double.NaN;
+	public Double spindleTubulinAverageIntensity = Double.NaN;
 	public Double spindleSumIntensityRaw = Double.NaN;;
 	public Double spindleWidthAvg = Double.NaN;
 	public Double spindleAspectRatio = Double.NaN;
 	public Double cellVolume = Double.NaN;
-	public Double cellTubulinSumIntensityRaw = Double.NaN;
+	public Double cellularTubulinAverageIntensity = Double.NaN;
+	public Double cellVoxels = Double.NaN;
+	public Double spindleVoxels = Double.NaN;
 
 	private HashMap< Integer, Map< String, Object > > objectMeasurements;
 
@@ -55,70 +57,70 @@ public class Spindle3DMeasurements
 
 	public void setObjectMeasurements( )
 	{
-		addMeasurement( "Version", version );
+		add( "Version", version );
 
-		addMeasurement( "DNA_Initial_Threshold", dnaInitialThreshold );
+		add( "DNA_Initial_Threshold", dnaInitialThreshold );
 
-		addMeasurement( "DNA_Volume_Threshold", dnaVolumeThreshold );
+		add( "DNA_Volume_Threshold", dnaVolumeThreshold );
 
-		addMeasurement( addLengthUnit( "MetaphasePlate_Width" ), metaphasePlateWidth );
+		add( addLengthUnit( "MetaphasePlate_Width" ), metaphasePlateWidth );
 
-		addMeasurement( addLengthUnit( "MetaphasePlate_Length" ), metaphasePlateLength );
+		add( addLengthUnit( "MetaphasePlate_Length" ), metaphasePlateLength );
 
-		addMeasurement( "Chromatin_Volume" + SEP + Spindle3DMeasurements.VOLUME_UNIT, chromatinVolume );
+		add( addVolumeUnit( "Chromatin_Volume" ), chromatinVolume );
 
-		addMeasurement( "Chromatin_Dilation", chromatinDilation );
+		add( "Chromatin_Dilation", chromatinDilation );
 
-		addMeasurement( "Spindle_Pole_Refinement_Distance" + SEP + "PoleA" + SEP + Spindle3DMeasurements.LENGTH_UNIT, spindlePoleARefinementDistance );
+		add( "Spindle_Pole_Refinement_Distance" + SEP + "PoleA" + SEP + Spindle3DMeasurements.LENGTH_UNIT, spindlePoleARefinementDistance );
 
-		addMeasurement( "Spindle_Pole_Refinement_Distance" + SEP + "PoleB" + SEP + Spindle3DMeasurements.LENGTH_UNIT, spindlePoleBRefinementDistance );
+		add( "Spindle_Pole_Refinement_Distance" + SEP + "PoleB" + SEP + Spindle3DMeasurements.LENGTH_UNIT, spindlePoleBRefinementDistance );
 
-		addMeasurement( "Spindle_Intensity_Threshold",  spindleThreshold );
+		add( "Spindle_Intensity_Threshold",  spindleThreshold );
 
-		addMeasurement( "Spindle_SNR", spindleSNR );
+		add( "Spindle_SNR", spindleSNR );
 
-		addMeasurement( "Spindle_Volume" + SEP + Spindle3DMeasurements.VOLUME_UNIT, spindleVolume );
+		add( "Spindle_Volume" + SEP + Spindle3DMeasurements.VOLUME_UNIT, spindleVolume );
 
-		addMeasurement( addLengthUnit( "Spindle_Length" ), spindleLength );
+		add( SPINDLE_LENGTH, spindleLength );
 
-		addMeasurement( addLengthUnit( "Spindle_Width_Min" ), spindleWidthMin );
+		add( addLengthUnit( "Spindle_Width_Min" ), spindleWidthMin );
 
-		addMeasurement( addLengthUnit( "Spindle_Width_Max" ), spindleWidthMax );
+		add( addLengthUnit( "Spindle_Width_Max" ), spindleWidthMax );
 
-		addMeasurement( addLengthUnit( "Spindle_Width_Avg" ), spindleWidthAvg );
+		add( SPINDLE_WIDTH_AVG, spindleWidthAvg );
 
-		addMeasurement( "Spindle_Aspect_Ratio", spindleAspectRatio );
+		add( "Spindle_Aspect_Ratio", spindleAspectRatio );
 
-		addMeasurement( addLengthUnit( "Spindle_Center_To_MetaphasePlate_Center_Distance" ), spindleCenterToMetaphasePlateCenterDistance );
+		add( addLengthUnit( "Spindle_Center_To_MetaphasePlate_Center_Distance" ), spindleCenterToMetaphasePlateCenterDistance );
 
-		addMeasurement( "Spindle_Angle_Degrees", spindleAngle );
+		add( SPINDLE_ANGLE_DEGREES, spindleAngle );
 
-		addMeasurement( "Spindle_Intensity_Variation", spindleIntensityVariation );
+		add( "Spindle_Intensity_Variation", spindleIntensityVariation );
 
-		addMeasurement( "Spindle_Sum_Intensity_Corrected", spindleSumIntensityCorrected );
+		add( "Spindle_Sum_Intensity_Corrected", spindleTubulinAverageIntensity );
 
-		addMeasurement( "Spindle_Sum_Intensity_Raw", spindleSumIntensityRaw );
+		add( "Spindle_Sum_Intensity_Raw", spindleSumIntensityRaw );
 
-		addMeasurement( "Cell_Volume" + SEP + Spindle3DMeasurements.VOLUME_UNIT, cellVolume );
+		add( "Cell_Volume" + SEP + Spindle3DMeasurements.VOLUME_UNIT, cellVolume );
 
-		addMeasurement( "Cell_Tubulin_Sum_Intensity_Raw", cellTubulinSumIntensityRaw );
+		add( "Cell_Tubulin_Sum_Intensity_Raw", cellularTubulinAverageIntensity );
 
-		addMeasurement( "Comment", log );
+		add( "Comment", log );
 	}
 
-	private void addMeasurement( String name, Object value )
+	private void add( String name, Object value )
 	{
 		Logger.log( name + ": " + value  );
-
-		Measurements.addMeasurement(
-				objectMeasurements,
-				0,
-				name,
-				value );
+		Measurements.addMeasurement( objectMeasurements, 0, name, value );
 	}
 
 	public static String addLengthUnit( String name )
 	{
 		return name + SEP + LENGTH_UNIT;
+	}
+
+	public static String addVolumeUnit( String name )
+	{
+		return name + SEP + VOLUME_UNIT;
 	}
 }

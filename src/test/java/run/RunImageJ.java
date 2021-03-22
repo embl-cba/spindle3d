@@ -1,3 +1,5 @@
+package run;
+
 import net.imagej.ImageJ;
 
 public class RunImageJ

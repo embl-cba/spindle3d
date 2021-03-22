@@ -1,3 +1,5 @@
+package run;
+
 import de.embl.cba.spindle3d.command.Spindle3DAdvancedCommand;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
