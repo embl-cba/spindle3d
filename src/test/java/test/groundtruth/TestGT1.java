@@ -38,12 +38,9 @@ public class TestGT1
 		command.run();
 
 		final HashMap< Integer, Map< String, Object > > measurements = command.getObjectMeasurements();
-
 		final Map< String, Object > features = measurements.get( 0 );
-
 		assertEquals( 10.5, (double) features.get( Spindle3DMeasurements.SPINDLE_LENGTH ), 1.0 );
 		assertEquals( 7.4, (double) features.get( Spindle3DMeasurements.SPINDLE_WIDTH_AVG ), 1.0 );
 		assertEquals( 5.0, (double) features.get( Spindle3DMeasurements.SPINDLE_ANGLE_DEGREES ), 10.0 );
-
 	}
 }

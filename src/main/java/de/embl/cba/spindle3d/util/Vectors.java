@@ -1,6 +1,5 @@
-package de.embl.cba.spindle3d;
+package de.embl.cba.spindle3d.util;
 
-import de.embl.cba.morphometry.Utils;
 import net.imglib2.util.LinAlgHelpers;
 
 import java.util.ArrayList;

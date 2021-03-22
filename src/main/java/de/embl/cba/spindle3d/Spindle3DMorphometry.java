@@ -10,6 +10,8 @@ import de.embl.cba.morphometry.geometry.ellipsoids.EllipsoidVectors;
 import de.embl.cba.morphometry.geometry.ellipsoids.Ellipsoids3DImageSuite;
 import de.embl.cba.morphometry.regions.Regions;
 import de.embl.cba.neighborhood.RectangleShape2;
+import de.embl.cba.spindle3d.util.ScriptRunner;
+import de.embl.cba.spindle3d.util.Vectors;
 import de.embl.cba.transforms.utils.Scalings;
 import de.embl.cba.transforms.utils.Transforms;
 import ij.CompositeImage;
@@ -122,7 +124,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 			measurements.log += "Exception during computation: \n" + e.toString();
 		}
 
-		measurements.setObjectMeasurements();
+		measurements.setMeasurementsForExport();
 
 		return measurements.log;
 	}
@@ -132,28 +134,29 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		return objectMeasurements;
 	}
 
-	public CompositeImage createOutputImage()
+	public CompositeImage createOutputImage( double imageWidthInMicrometer, double interestPointsRadiusMicrometer )
 	{
 		final AffineTransform3D rescaledInputToSpindleAlignedTransform =
 				rescaledToDnaAlignmentTransform.preConcatenate( dnaAlignedToSpindleAlignedTransform );
 
-		final int size = (int) ( settings.cellRadius / settings.voxelSizeForAnalysis );
+		final int width = (int) ( imageWidthInMicrometer / settings.voxelSizeForAnalysis );
 
 		final int[] center = { 0, 0, 0 };
+		final int imageHalfWidth = width / 2;
 		final FinalInterval crop = FinalInterval.createMinMax(
-				center[ 0 ] - 3 * size,
-				center[ 1 ] - 3 * size,
-				center[ 2 ] - 3 * size, // spindle axis
-				center[ 0 ] + 3 * size,
-				center[ 1 ] + 3 * size,
-				center[ 2 ] + 3 * size // spindle axis
+				center[ 0 ] - imageHalfWidth,
+				center[ 1 ] - imageHalfWidth,
+				center[ 2 ] - imageHalfWidth,
+				center[ 0 ] + imageHalfWidth,
+				center[ 1 ] + imageHalfWidth,
+				center[ 2 ] + imageHalfWidth
 		);
 
 		RandomAccessibleInterval< R > raiXYZC = createTransformedMultiChannelOutputImage(
 				spindleAlignedDnaMask,
 				spindleAlignedSpindleMask,
 				rescaledInputToSpindleAlignedTransform,
-				createInterestPointImage( spindleAlignedSpindlePoles, spindleAlignedDna ),
+				createInterestPointImage( spindleAlignedSpindlePoles, spindleAlignedDna, interestPointsRadiusMicrometer ),
 				crop );
 
 		if ( settings.showIntermediateImages )
@@ -263,9 +266,9 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		dnaAlignedSpindlePoles = measureSpindlePoleLocations( dnaAlignedSpindleMask, dnaAlignedTubulin );
 
-		dnaAlignedSpindlePoleToPoleVector = Vectors.vector( dnaAlignedSpindlePoles.get( 0 ), dnaAlignedSpindlePoles.get( 1 ) );
+		dnaAlignedSpindlePoleToPoleVector = de.embl.cba.spindle3d.util.Vectors.vector( dnaAlignedSpindlePoles.get( 0 ), dnaAlignedSpindlePoles.get( 1 ) );
 
-		dnaAlignedSpindleCenter = Vectors.middle( dnaAlignedSpindlePoles );
+		dnaAlignedSpindleCenter = de.embl.cba.spindle3d.util.Vectors.middle( dnaAlignedSpindlePoles );
 
 		measureDnaCenterToSpindleCenterDistance( dnaAlignedSpindleCenter );
 
@@ -275,16 +278,16 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		if ( spindleAlignedCellMask != null ) measurements.cellVolume = measureVolume( spindleAlignedCellMask );
 
-		measurements.spindleIntensityVariation
+		measurements.tubulinSpindleIntensityVariation
 				= Utils.measureCoefficientOfVariation(
 						spindleAlignedTublin,
 						spindleAlignedSpindleMask,
 						measurements.spindleThreshold
 				);
 
-		if ( spindleAlignedCellMask != null) measurements.cellularTubulinAverageIntensity = Utils.computeAverage( spindleAlignedTublin, spindleAlignedCellMask );
+		if ( spindleAlignedCellMask != null) measurements.tubulinCellularAverageIntensity = Utils.computeAverage( spindleAlignedTublin, spindleAlignedCellMask );
 
-		measurements.spindleTubulinAverageIntensity = Utils.computeAverage( spindleAlignedTublin, spindleAlignedSpindleMask );
+		measurements.tubulinSpindleAverageIntensity = Utils.computeAverage( spindleAlignedTublin, spindleAlignedSpindleMask );
 
 		measureSpindleWidth( spindleAlignedSpindleMask );
 
@@ -306,9 +309,9 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 	private double[] createNormalisedVector( double[] scalingFactorsFromRawToVoxelSizesForAnalysis, double[][] spindlePolePositionsInRawDataPixels )
 	{
 		Logger.log( "Using ROIs to compute shortest DNA axis" );
-		final double[] poleToPoleVectorInRawDataPixelUnits = Vectors.vector( spindlePolePositionsInRawDataPixels[ 0 ], spindlePolePositionsInRawDataPixels[ 1 ] );
+		final double[] poleToPoleVectorInRawDataPixelUnits = de.embl.cba.spindle3d.util.Vectors.vector( spindlePolePositionsInRawDataPixels[ 0 ], spindlePolePositionsInRawDataPixels[ 1 ] );
 
-		final double[] poleToPoleVectorInAnalysisPixelUnits = Vectors.componentWiseMultiplication( poleToPoleVectorInRawDataPixelUnits, scalingFactorsFromRawToVoxelSizesForAnalysis );
+		final double[] poleToPoleVectorInAnalysisPixelUnits = de.embl.cba.spindle3d.util.Vectors.componentWiseMultiplication( poleToPoleVectorInRawDataPixelUnits, scalingFactorsFromRawToVoxelSizesForAnalysis );
 
 		LinAlgHelpers.normalize( poleToPoleVectorInAnalysisPixelUnits );
 
@@ -476,7 +479,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 			}
 		}
 
-		final double thresholdOtsu = Spindle3DUtils.thresholdOtsu( dnaPeripheryTubulinValues );
+		final double thresholdOtsu = Spindle3DAlgorithms.thresholdOtsu( dnaPeripheryTubulinValues );
 
 		final double medianCytoplasm = Utils.median( cytoplasmicTubulinValues );
 		final double madCytoplasm = Utils.mad( cytoplasmicTubulinValues, medianCytoplasm );
@@ -490,6 +493,8 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		final double threshold = thresholdOtsu; // medianCytoplasm + 5 * madCytoplasm;
 		Logger.log( "Spindle threshold = Tubulin Otsu threshold: " + threshold );
+
+		measurements.tublinCytoplasmAverageIntensity = meanCytoplasm;
 
 		measurements.spindleSNR = ( meanSpindle - meanCytoplasm ) / Math.sqrt( sdevCytoplasm * sdevCytoplasm + sdevSpindle * sdevSpindle );
 
@@ -580,7 +585,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		// transformation is in voxel units
 		final double[] voxels = toVoxels( location );
 		affineTransform3D.apply( voxels, transformed );
-		final double[] calibrated = Vectors.calibrate( transformed, settings.voxelSizeForAnalysis );
+		final double[] calibrated = de.embl.cba.spindle3d.util.Vectors.calibrate( transformed, settings.voxelSizeForAnalysis );
 		return calibrated;
 	}
 
@@ -666,7 +671,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		rescaledVolumes = new ArrayList<>();
 
-		scalingFactorsRawToRescaled = Transforms.getScalingFactors( settings.inputCalibration, settings.voxelSizeForAnalysis );
+		scalingFactorsRawToRescaled = Transforms.getScalingFactors( settings.inputVoxelSize, settings.voxelSizeForAnalysis );
 
 		for ( int c = 0; c < numChannels; c++ )
 		{
@@ -737,7 +742,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 	private void createInitialDnaMask( RandomAccessibleInterval< R > dna, double dnaThreshold )
 	{
-		RandomAccessibleInterval< BitType > dnaMask = Spindle3DUtils.createMask( dna, dnaThreshold, opService );
+		RandomAccessibleInterval< BitType > dnaMask = Spindle3DAlgorithms.createMask( dna, dnaThreshold, opService );
 		final int numRemainingRegions = Spindle3DAlgorithms.removeRegionsTouchingImageBorders( dnaMask, 2 );
 
 		if ( numRemainingRegions == 0 )
@@ -887,7 +892,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 	private void createDnaMaskAndMeasureDnaVolume( RandomAccessibleInterval< R > dna, Double dnaVolumeThreshold )
 	{
-		dnaAlignedDnaMask = Spindle3DUtils.createMask( dna, dnaVolumeThreshold, opService );
+		dnaAlignedDnaMask = Spindle3DAlgorithms.createMask( dna, dnaVolumeThreshold, opService );
 
 		final int numRemainingRegions = Spindle3DAlgorithms.removeRegionsTouchingImageBorders( dnaAlignedDnaMask, 3 );
 
@@ -1176,7 +1181,8 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 	private RandomAccessibleInterval< BitType > createInterestPointImage(
 			ArrayList< double[] > spindlePoles,
-			RandomAccessibleInterval< R > referenceImage )
+			RandomAccessibleInterval< R > referenceImage,
+			double interestPointsRadius )
 	{
 		RandomAccessibleInterval< BitType > interestPointsImage = ArrayImgs.bits( Intervals.dimensionsAsLongArray( referenceImage ) );
 		interestPointsImage = Views.translate( interestPointsImage, Intervals.minAsLongArray( referenceImage ) );
@@ -1185,7 +1191,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		drawPoint(
 				interestPointsImage,
 				origin,
-				settings.interestPointsRadius,
+				interestPointsRadius,
 				settings.voxelSizeForAnalysis,
 				new BitType( true ) );
 
@@ -1193,7 +1199,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 			drawPoint(
 					interestPointsImage,
 					spindlePole,
-					settings.interestPointsRadius,
+					interestPointsRadius,
 					settings.voxelSizeForAnalysis,
 					new BitType( true ) );
 

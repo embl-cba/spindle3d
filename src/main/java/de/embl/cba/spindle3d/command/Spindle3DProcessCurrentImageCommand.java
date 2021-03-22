@@ -1,6 +1,5 @@
 package de.embl.cba.spindle3d.command;
 
-import de.embl.cba.spindle3d.Spindle3DCommand;
 import ij.ImagePlus;
 import net.imglib2.type.numeric.RealType;
 import org.scijava.command.Command;

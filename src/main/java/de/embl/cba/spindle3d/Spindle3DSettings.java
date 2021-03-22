@@ -1,5 +1,7 @@
 package de.embl.cba.spindle3d;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import ij.measure.Calibration;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.NativeType;
@@ -10,6 +12,8 @@ import java.io.File;
 
 public class Spindle3DSettings<T extends RealType<T> & NativeType< T > >
 {
+	public String version;
+
 	/**
 	 * Spatial
 	 */
@@ -22,14 +26,6 @@ public class Spindle3DSettings<T extends RealType<T> & NativeType< T > >
 	public double axialPoleRefinementRadius = 1.0; // um
 	public double lateralPoleRefinementRadius = 2.0; // um
 	public double voxelSizeForInitialDNAThreshold = 1.5; // um
-
-	@Deprecated // ??
-	public double minimalDnaAndTubulinFragmentsVolume = 1 * 3 * 3; // um^3
-
-	public double maxCentralObjectRegionsDistance = 7; // um
-
-	public double cellRadius = 6.0; // um
-	public double erosionOfDnaMaskInCalibratedUnits = 1.0; // um
 	public double interestPointsRadius = 0.5; // um
 
 	/**
@@ -41,46 +37,26 @@ public class Spindle3DSettings<T extends RealType<T> & NativeType< T > >
 	/**
 	 * Other
 	 */
-	public String version;
-	public boolean showIntermediateImages = false;
-	public boolean showIntermediatePlots = false;
-	public double[] inputCalibration;
-	public File outputDirectory;
-	public String inputDataSetName;
-	public Calibration imagePlusCalibration;
+	public transient boolean showIntermediateImages = false;
+	public transient boolean showIntermediatePlots = false;
+	public double[] inputVoxelSize;
+	public transient File outputDirectory;
+	public transient String inputDataSetName;
+	public transient Calibration imagePlusCalibration;
 	public long dnaChannelIndex;
 	public long tubulinChannelIndex;
-	public boolean showOutputImage = false;
-	public double spindleThresholdFactor = 1.0;
-	public File roiDetectionMacro;
-
-	public boolean smoothSpindle = false;
+	public transient boolean showOutputImage = false;
+	public transient File roiDetectionMacro;
+	public transient boolean smoothSpindle = false;
 	public double[][] manualSpindleAxisPositions;
-	public RandomAccessibleInterval< BitType > cellMask;
+	public transient RandomAccessibleInterval< BitType > cellMask;
 
-	// TODO PAPER Clean this up and make sure everything is added
 	public String toString()
 	{
-		String settings = new String();
-
-		settings += "\n";
-		settings += "## Spindle Morphometry Settings\n";
-		settings += "dnaChannelIndex: " + dnaChannelIndex + "\n";
-		settings += "tubulinChannelIndex: " + tubulinChannelIndex + "\n";
-		settings += "voxelSizeForAnalysis: " + voxelSizeForAnalysis + "\n";
-		settings += "voxelSizeForInitialDNAThreshold: " + voxelSizeForInitialDNAThreshold + "\n";
-		settings += "dnaThresholdFactor: " + initialThresholdFactor + "\n";
-		settings += "spindleThresholdFactor: " + spindleThresholdFactor + "\n";
-		settings += "spindleFragmentInclusionZone: " + spindleFragmentInclusionZone + "\n";
-
-		settings += "minimalDynamicRange: " + minimalDynamicRange + "\n";
-		settings += "metaphasePlateWidthDerivativeDelta: " + metaphasePlateWidthDerivativeDelta + "\n";
-		settings += "metaphasePlateLengthDerivativeDelta: " + metaphasePlateLengthDerivativeDelta + "\n";
-
-		settings += "maxCentralObjectRegionsDistance: " + maxCentralObjectRegionsDistance + "\n";
-		settings += "erosionOfDnaMaskInCalibratedUnits: " + erosionOfDnaMaskInCalibratedUnits + "\n";
-
-		return settings;
+		String s = "\n## Spindle3D Settings\n";
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		s += gson.toJson( this );
+		s += "\n";
+		return s;
 	}
-
 }

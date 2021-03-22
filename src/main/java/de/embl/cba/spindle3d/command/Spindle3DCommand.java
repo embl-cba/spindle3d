@@ -1,9 +1,13 @@
-package de.embl.cba.spindle3d;
+package de.embl.cba.spindle3d.command;
 
 import de.embl.cba.morphometry.ImageSuite3D;
 import de.embl.cba.morphometry.Logger;
 import de.embl.cba.morphometry.Measurements;
 import de.embl.cba.morphometry.Utils;
+import de.embl.cba.spindle3d.Spindle3DMeasurements;
+import de.embl.cba.spindle3d.Spindle3DMorphometry;
+import de.embl.cba.spindle3d.Spindle3DSettings;
+import de.embl.cba.spindle3d.Spindle3DVersion;
 import de.embl.cba.tables.Tables;
 import ij.CompositeImage;
 import ij.IJ;
@@ -138,7 +142,7 @@ public abstract class Spindle3DCommand< R extends RealType< R > > implements Com
 		{
 			if ( this.settings.showOutputImage == true || saveResults )
 			{
-				final CompositeImage outputImage = morphometry.createOutputImage();
+				final CompositeImage outputImage = morphometry.createOutputImage( 36, 0.5 );
 
 				if ( this.settings.showOutputImage == true )
 					outputImage.show();
@@ -185,8 +189,8 @@ public abstract class Spindle3DCommand< R extends RealType< R > > implements Com
 
 	protected RandomAccessibleInterval< BitType > tryOpenCellMask( String imagePath )
 	{
-		final String extension = FilenameUtils.getExtension( imagePath );
-		final String cellMaskPath = imagePath.replace( extension, "_CellMask." + extension );
+		final String extension = "." + FilenameUtils.getExtension( imagePath );
+		final String cellMaskPath = imagePath.replace( extension, "_CellMask" + extension );
 
 		if ( new File( cellMaskPath ).exists() )
 		{
@@ -241,7 +245,7 @@ public abstract class Spindle3DCommand< R extends RealType< R > > implements Com
 
 	protected void setSettingsFromImagePlus( ImagePlus imagePlus )
 	{
-		settings.inputCalibration = Utils.getCalibration( imagePlus );
+		settings.inputVoxelSize = Utils.getCalibration( imagePlus );
 		settings.imagePlusCalibration = imagePlus.getCalibration();
 		settings.inputDataSetName = imagePlus.getTitle();
 	}
@@ -271,7 +275,6 @@ public abstract class Spindle3DCommand< R extends RealType< R > > implements Com
 		}
 		catch ( Exception e )
 		{
-			Logger.log( "[WARNING]: Could not relativize path " + inputImageFile );
 			relativeInputImagePath = inputImageFile.toPath();
 		}
 
