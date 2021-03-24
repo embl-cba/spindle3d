@@ -201,7 +201,6 @@ public abstract class Spindle3DCommand< R extends RealType< R > > implements Com
 		}
 		else
 		{
-			Logger.log( "Did not find cell mask file: " + cellMaskPath );
 			return null;
 		}
 	}

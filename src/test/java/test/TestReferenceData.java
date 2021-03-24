@@ -1,4 +1,4 @@
-package test.groundtruth;
+package test;
 
 import de.embl.cba.spindle3d.Spindle3DMeasurements;
 import de.embl.cba.spindle3d.command.Spindle3DProcessFileCommand;
@@ -13,8 +13,15 @@ import static org.junit.Assert.assertEquals;
 
 
 /**
+ * Test whether the output is within a certain tolerance
+ * of reference measurements.
+ *
+ * This is to ensure that future code changes due not
+ * compromise correct measurements.
+ *
+ * Measurements:
+ *
  * Cell_ID | Spindle_Length_um | Spindle_Width_Avg_um | Spindle_Angle_Degrees
- * -- | -- | -- | --
  * NikonSD_100x_HeLa_02 | 13.768170 | 12.184211 | 3.539942
  * NikonSD_60x_HeLa_02 | 13.024016 | 14.684211 | 0.858832
  * ZeissLSM_40x_R1EmESC_01 | 10.764525 | 8.131579 | 1.683764
@@ -23,11 +30,23 @@ import static org.junit.Assert.assertEquals;
  * ZeissLSM_40x_CowZygote_01 | 20.202104 | 17.973684 | 10.212573
  * NikonSD_60x_HEK293SiRTubulin_01 | 9.630680 | 9.960526 | 11.556570
  * NikonSD_100x_R1EmESC_01 | 7.141428 | 7.000000 | 43.269730
+ *
+ *
+ * Stainings:
+ *
+ * Cell_ID	Ch 1	Ch 2
+ * NikonSD_100x_HeLa_02	SiR DNA	Tub-GFP
+ * NikonSD_60x_HeLa_02	SiR DNA	Tub-GFP
+ * ZeissLSM_40x_R1EmESC_01	SiR DNA	Tub-GFP
+ * NikonSD_40x_Ptk2_01	Hoechst	Tub-YFP
+ * NikonSD_60x_R1EmESC_01	SiR DNA	Tub-GFP
+ * ZeissLSM_40x_CowZygote_01	H2B-mScarlet	mClover3-MAP4
+ * NikonSD_60x_HEK293SiRTubulin_01	Hoechst	SiR Tubulin
+ * NikonSD_100x_R1EmESC_01	SiR DNA	Tub-GFP
  */
 public class TestReferenceData
 {
-
-	public static final double SPINDLE_LENGHT_TOLERANCE = 0.5; // um
+	public static final double SPINDLE_LENGTH_TOLERANCE = 0.5; // um
 	public static final double SPINDLE_WIDTH_TOLERANCE = 0.3; // um
 	public static final double SPINDLE_ANGLE_TOLERANCE = 5; // degrees
 
@@ -87,7 +106,7 @@ public class TestReferenceData
 	private void addReference( HashMap< String, Map< String, double[] > > datasetToMeasurements, String dataset, double length, double width, double angle )
 	{
 		final HashMap< String, double[] > measurements = new HashMap<>();
-		measurements.put( Spindle3DMeasurements.SPINDLE_LENGTH, new double[]{ length, SPINDLE_LENGHT_TOLERANCE } );
+		measurements.put( Spindle3DMeasurements.SPINDLE_LENGTH, new double[]{ length, SPINDLE_LENGTH_TOLERANCE } );
 		measurements.put( Spindle3DMeasurements.SPINDLE_WIDTH_AVG, new double[]{ width, SPINDLE_WIDTH_TOLERANCE } );
 		measurements.put( Spindle3DMeasurements.SPINDLE_ANGLE_DEGREES, new double[]{ angle, SPINDLE_ANGLE_TOLERANCE } );
 		datasetToMeasurements.put( dataset, measurements );

@@ -7,11 +7,11 @@ import org.junit.Test;
 
 import java.io.File;
 
-public class TestSpindleMorphometryWithSpindlePoleROIs
+public class TestWithCellMask
 {
 	public static void main( String[] args )
 	{
-		new TestSpindleMorphometryWithSpindlePoleROIs().test();
+		new TestWithCellMask().test();
 	}
 
 	@Test
@@ -26,11 +26,11 @@ public class TestSpindleMorphometryWithSpindlePoleROIs
 		command.scriptService = ij.script();
 
 		// Spindle touching objects
-		command.inputImageFile = new File("src/test/resources/test/with-spindle-pole-rois/pointROIs.tif" );
+		command.inputImageFile = new File("src/test/resources/test/with-cell-mask/20210204_HeLa_MCB309_006-1.tif" );
 
 		command.outputDirectory = new File( "src/test/resources/test/output" );
-		command.spindleChannelIndexOneBased = 2;
-		command.dnaChannelIndexOneBased = 1;
+		command.spindleChannelIndexOneBased = 1;
+		command.dnaChannelIndexOneBased = 2;
 		command.showIntermediateImages = false;
 		command.showIntermediatePlots = false;
 		command.saveResults = false;
