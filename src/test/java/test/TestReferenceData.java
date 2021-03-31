@@ -4,6 +4,7 @@ import de.embl.cba.spindle3d.Spindle3DMeasurements;
 import de.embl.cba.spindle3d.command.Spindle3DFileProcessorCommand;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
+import net.imagej.patcher.LegacyInjector;
 import org.junit.Test;
 
 import java.io.File;
@@ -58,6 +59,7 @@ public class TestReferenceData
 	@Test
 	public void run()
 	{
+		final ImageJ ij = new ImageJ();
 		DebugTools.setRootLevel("OFF");
 
 		final HashMap< String, Map< String, double[] > > imageToMeasurements = new HashMap<>();
@@ -72,7 +74,6 @@ public class TestReferenceData
 		addReference( imageToMeasurements, "NikonSD_100x_R1EmESC_01", 7.141428, 7.000000, 43.269730 );
 
 
-		final ImageJ ij = new ImageJ();
 		final Spindle3DFileProcessorCommand< ? > command = new Spindle3DFileProcessorCommand<>();
 		command.opService = ij.op();
 		command.scriptService = ij.script();

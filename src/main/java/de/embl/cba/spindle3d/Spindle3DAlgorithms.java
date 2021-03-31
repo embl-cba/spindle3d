@@ -4,6 +4,7 @@ import de.embl.cba.morphometry.Algorithms;
 import de.embl.cba.morphometry.Logger;
 import de.embl.cba.morphometry.regions.Regions;
 import de.embl.cba.transforms.utils.Transforms;
+import ij.IJ;
 import net.imagej.ops.OpService;
 import net.imglib2.*;
 import net.imglib2.algorithm.labeling.ConnectedComponents;
@@ -149,7 +150,7 @@ public abstract class Spindle3DAlgorithms
 			}
 		}
 
-		Logger.log( "Removed " + numRegionsTouchingBorder + " of " + size + " regions, because of image border contact." );
+		IJ.log( "Removed " + numRegionsTouchingBorder + " of " + size + " regions, because of image border contact." );
 		return size - numRegionsTouchingBorder;
 	}
 

@@ -11,10 +11,6 @@ public class Spindle3DAdvancedProcessor extends Spindle3DProcessor
 	@Parameter ( label = "Minimum dynamic range [gray value]" )
 	public int minimalDynamicRange = settings.minimalDynamicRange;
 
-	// TODO: Remove?
-	@Parameter ( label = "Maximal metaphase plate length [um]" )
-	public double maxMetaphasePlateLength = settings.maxMetaphasePlateLength;
-
 	@Parameter ( label = "Axial spindle poles refinement search radius [um]" )
 	public double axialPoleRefinementRadius = settings.axialPoleRefinementRadius;
 
@@ -40,7 +36,6 @@ public class Spindle3DAdvancedProcessor extends Spindle3DProcessor
 		settings.showIntermediateImages = showIntermediateImages;
 		settings.smoothSpindle = smoothSpindle;
 		settings.voxelSizeForAnalysis = voxelSizeForAnalysis;
-		settings.maxMetaphasePlateLength = maxMetaphasePlateLength; // TODO: Remove?
 		settings.axialPoleRefinementRadius = axialPoleRefinementRadius;
 		settings.lateralPoleRefinementRadius = lateralPoleRefinementRadius;
 		settings.minimalDynamicRange = minimalDynamicRange;

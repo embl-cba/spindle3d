@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import de.embl.cba.morphometry.Logger;
 import de.embl.cba.morphometry.Measurements;
+import ij.IJ;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +43,7 @@ public class Spindle3DMeasurements
 	public Double tubulinSpindleIntensityVariation = Double.NaN;
 	public Double tubulinSpindleAverageIntensity = Double.NaN;
 	public Double tubulinCellularAverageIntensity = Double.NaN;
-	public Double tublinCytoplasmAverageIntensity = Double.NaN;
+	public Double tubulinCytoplasmAverageIntensity = Double.NaN;
 	public Double spindleWidthAvg = Double.NaN;
 	public Double spindleAspectRatio = Double.NaN;
 	public Double cellVolume = Double.NaN;
@@ -57,7 +58,7 @@ public class Spindle3DMeasurements
 
 	public void setMeasurementsForExport( )
 	{
-		Logger.log( this.toString() );
+		IJ.log( this.toString() );
 
 		add( "Version", version );
 

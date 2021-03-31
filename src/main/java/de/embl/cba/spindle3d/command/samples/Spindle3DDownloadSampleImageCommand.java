@@ -20,7 +20,7 @@ public class Spindle3DDownloadSampleImageCommand implements Command
 			"NikonSD_60x_R1EmESC_01.tif",
 			"NikonSD_100x_HeLa_02.tif",
 			"NikonSD_100x_R1EmESC_01.tif",
-			"ZeissLSM_40x_CowZygote_01.tif",
+			//"ZeissLSM_40x_CowZygote_01.tif",
 			"ZeissLSM_40x_R1EmESC_01.tif"};
 
 	@Parameter ( label = "Image", choices = {
@@ -30,7 +30,7 @@ public class Spindle3DDownloadSampleImageCommand implements Command
 			"NikonSD_60x_R1EmESC_01.tif",
 			"NikonSD_100x_HeLa_02.tif",
 			"NikonSD_100x_R1EmESC_01.tif",
-			"ZeissLSM_40x_CowZygote_01.tif",
+			//"ZeissLSM_40x_CowZygote_01.tif",
 			"ZeissLSM_40x_R1EmESC_01.tif"} )
 	String fileName;
 
@@ -38,6 +38,4 @@ public class Spindle3DDownloadSampleImageCommand implements Command
 	{
 		IJ.openImage( GITHUB_LOCATION +fileName ).show();
 	}
-
-
 }

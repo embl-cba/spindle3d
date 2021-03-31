@@ -75,7 +75,7 @@
 		<scijava.app.directory>/Users/tischer/Desktop/Fiji/Fiji-Spindle3D.app</scijava.app.directory>
 		<enforcer.skip>true</enforcer.skip>
 
-		<imagej-utils.version>0.6.2</imagej-utils.version>
+		<imagej-utils.version>0.6.3-SNAPSHOT</imagej-utils.version>
 	</properties>
 
 
@@ -91,22 +91,7 @@
 
 		<dependency>
 			<groupId>net.imagej</groupId>
-			<artifactId>imagej-legacy</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>net.imagej</groupId>
 			<artifactId>imagej</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>net.imagej</groupId>
-			<artifactId>imagej-common</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>net.imagej</groupId>
-			<artifactId>ij</artifactId>
 		</dependency>
 
 		<dependency>

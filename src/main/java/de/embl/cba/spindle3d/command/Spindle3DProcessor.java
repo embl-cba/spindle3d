@@ -66,7 +66,8 @@ public abstract class Spindle3DProcessor< R extends RealType< R > >
 
 	protected void setSettings()
 	{
-		init();
+		DebugTools.setRootLevel( "OFF" ); // Bio-Formats
+		if ( ! ImageSuite3D.isAvailable() ) throw new RuntimeException( "Please enable the 3D Image Suite update site!" );
 
 		settings.showIntermediateImages = showIntermediateImages;
 		settings.showIntermediatePlots = showIntermediatePlots;
@@ -81,6 +82,8 @@ public abstract class Spindle3DProcessor< R extends RealType< R > >
 
 	protected void processFile( File imagePath )
 	{
+		IJ.log( settings.toString() );
+
 		setImageName( imagePath.getName() );
 
 		ImagePlus imagePlus;
@@ -102,14 +105,10 @@ public abstract class Spindle3DProcessor< R extends RealType< R > >
 		processImagePlus( imagePlus, cellMask );
 	}
 
-	protected void init()
-	{
-		DebugTools.setRootLevel( "OFF" ); // Bio-Formats
-		if ( ! ImageSuite3D.isAvailable() ) throw new RuntimeException( "Please enable the 3D Image Suite update site!" );
-	}
-
 	protected void processImagePlus( ImagePlus imagePlus, RandomAccessibleInterval< BitType > cellMask )
 	{
+		IJ.log( settings.toString() );
+
 		settings.cellMask = cellMask;
 
 		setImageName( imagePlus.getTitle() );
@@ -124,7 +123,7 @@ public abstract class Spindle3DProcessor< R extends RealType< R > >
 
 		final String log = morphometry.run( raiXYCZ );
 
-		Logger.log( log );
+		IJ.log( log );
 
 		objectMeasurements = morphometry.getObjectMeasurements();
 
@@ -194,7 +193,7 @@ public abstract class Spindle3DProcessor< R extends RealType< R > >
 		{
 			final RandomAccessibleInterval< R > rai = ImageJFunctions.wrapReal( Utils.openWithBioFormats( cellMaskPath ) );
 			RandomAccessibleInterval< BitType > cellMask = Converters.convert( rai, ( i, o ) -> o.set( i.getRealDouble() > 0.5 ? true : false ), new BitType() );
-			Logger.log( "Found cell mask file: " + cellMaskPath );
+			IJ.log( "Found cell mask file: " + cellMaskPath );
 			return cellMask;
 		}
 		else
@@ -212,13 +211,13 @@ public abstract class Spindle3DProcessor< R extends RealType< R > >
 
 	protected void logEnd()
 	{
-		Logger.log( "Done!" );
+		IJ.log( "Done!" );
 	}
 
 	protected void logStart( String imageName )
 	{
-		Logger.log( "\n## Spindle Morphometry Measurements" );
-		Logger.log( "Processing image: " + imageName );
+		IJ.log( "\n## Spindle Morphometry Measurements" );
+		IJ.log( "Processing image: " + imageName );
 	}
 
 	protected void saveMeasurements( Spindle3DMorphometry morphometry )
@@ -227,7 +226,7 @@ public abstract class Spindle3DProcessor< R extends RealType< R > >
 
 		final File tableOutputFile = new File( getOutputDirectory() + "measurements.txt" );
 
-		Logger.log( "Saving measurements table:\n" + tableOutputFile );
+		IJ.log( "Saving measurements table:\n" + tableOutputFile );
 
 		Tables.saveTable( jTable, tableOutputFile );
 	}
@@ -255,7 +254,7 @@ public abstract class Spindle3DProcessor< R extends RealType< R > >
 
 		addImagePathToMeasurements( parentPath, outputImageFile, objectMeasurements, "Path_OutputImage" );
 
-		Logger.log( "Saving output image:\n" + outputImageFile );
+		IJ.log( "Saving output image:\n" + outputImageFile );
 		IJ.saveAs( imagePlus, "ZIP", outputImageFile.toString() );
 	}
 

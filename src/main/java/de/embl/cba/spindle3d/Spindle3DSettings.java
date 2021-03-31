@@ -18,15 +18,12 @@ public class Spindle3DSettings<T extends RealType<T> & NativeType< T > >
 	 * Spatial
 	 */
 	public double voxelSizeForAnalysis = 0.25; // um
-	public double maxMetaphasePlateLength = 22; // um
-	public double maxMetaphasePlateWidth = 8; // um
 	public double metaphasePlateWidthDerivativeDelta = 1.0; // um
 	public double metaphasePlateLengthDerivativeDelta = 2.0; // um
 	public double spindleFragmentInclusionZone = 3.0; // um;
 	public double axialPoleRefinementRadius = 1.0; // um
 	public double lateralPoleRefinementRadius = 2.0; // um
 	public double voxelSizeForInitialDNAThreshold = 1.5; // um
-	public double interestPointsRadius = 0.5; // um
 
 	/**
 	 * Intensity
