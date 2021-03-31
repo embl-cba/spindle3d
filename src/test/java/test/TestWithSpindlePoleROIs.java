@@ -1,6 +1,6 @@
 package test;
 
-import de.embl.cba.spindle3d.command.Spindle3DProcessFileCommand;
+import de.embl.cba.spindle3d.command.Spindle3DFileProcessorCommand;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
 import org.junit.Test;
@@ -21,7 +21,7 @@ public class TestWithSpindlePoleROIs
 
 		final ImageJ ij = new ImageJ();
 
-		final Spindle3DProcessFileCommand< ? > command = new Spindle3DProcessFileCommand<>();
+		final Spindle3DFileProcessorCommand< ? > command = new Spindle3DFileProcessorCommand<>();
 		command.opService = ij.op();
 		command.scriptService = ij.script();
 

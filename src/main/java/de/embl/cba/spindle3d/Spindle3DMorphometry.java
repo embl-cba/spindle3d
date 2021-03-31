@@ -10,6 +10,7 @@ import de.embl.cba.morphometry.geometry.ellipsoids.EllipsoidVectors;
 import de.embl.cba.morphometry.geometry.ellipsoids.Ellipsoids3DImageSuite;
 import de.embl.cba.morphometry.regions.Regions;
 import de.embl.cba.neighborhood.RectangleShape2;
+import de.embl.cba.spindle3d.util.ProfileAndRadius;
 import de.embl.cba.spindle3d.util.ScriptRunner;
 import de.embl.cba.spindle3d.util.Vectors;
 import de.embl.cba.transforms.utils.Scalings;
@@ -730,8 +731,8 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		Logger.log( channel + " downscaled minimum value: " + minMaxValues.getA()  );
 		Logger.log( channel + " downscaled maximum value: " + minMaxValues.getB()  );
-		Logger.log( channel + " initial threshold factor: " + settings.initialThresholdFactor );
-		double dnaInitialThreshold = ( minMaxValues.getB() - minMaxValues.getA() ) * settings.initialThresholdFactor + minMaxValues.getA() ;
+		Logger.log( channel + " initial threshold factor: " + settings.initialDnaThresholdFactor );
+		double dnaInitialThreshold = ( minMaxValues.getB() - minMaxValues.getA() ) * settings.initialDnaThresholdFactor + minMaxValues.getA() ;
 		Logger.log( channel + " initial threshold = ( max - min ) * factor + min: " + dnaInitialThreshold );
 
 		measurements.dnaInitialThreshold = dnaInitialThreshold;
@@ -1204,13 +1205,6 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 					new BitType( true ) );
 
 		return interestPointsImage;
-	}
-
-	class ProfileAndRadius
-	{
-		CoordinatesAndValues profile;
-		Double radius;
-		int radiusIndex;
 	}
 
 	private ProfileAndRadius measureRadialProfileAndRadius(

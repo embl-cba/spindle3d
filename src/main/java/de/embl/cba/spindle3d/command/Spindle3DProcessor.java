@@ -34,7 +34,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class Spindle3DCommand< R extends RealType< R > > implements Command
+public abstract class Spindle3DProcessor< R extends RealType< R > >
 {
 	public Spindle3DSettings settings = new Spindle3DSettings();
 
@@ -66,11 +66,12 @@ public abstract class Spindle3DCommand< R extends RealType< R > > implements Com
 
 	protected void setSettings()
 	{
+		init();
+
 		settings.showIntermediateImages = showIntermediateImages;
 		settings.showIntermediatePlots = showIntermediatePlots;
 		settings.outputDirectory = outputDirectory;
 		settings.version = version;
-		Logger.log( settings.toString() );
 	}
 
 	public HashMap< Integer, Map< String, Object > > getObjectMeasurements()
@@ -78,16 +79,15 @@ public abstract class Spindle3DCommand< R extends RealType< R > > implements Com
 		return objectMeasurements;
 	}
 
-
-	protected void processFile( String imagePath )
+	protected void processFile( File imagePath )
 	{
-		setImageName( new File( imagePath ).getName() );
+		setImageName( imagePath.getName() );
 
 		ImagePlus imagePlus;
 		try
 		{
 			// because Bio-Formats does not read the imageJ Rois.
-			imagePlus = IJ.openImage( imagePath );
+			imagePlus = IJ.openImage( imagePath.toString() );
 
 		}
 		catch ( Exception e )
@@ -97,17 +97,15 @@ public abstract class Spindle3DCommand< R extends RealType< R > > implements Com
 
 		imagePlus.setTitle( imageName );
 
-		final RandomAccessibleInterval< BitType > cellMask = tryOpenCellMask( imagePath );
+		final RandomAccessibleInterval< BitType > cellMask = tryOpenCellMask( imagePath.toString() );
 
 		processImagePlus( imagePlus, cellMask );
 	}
 
-	protected boolean fetchSettingAndInit()
+	protected void init()
 	{
 		DebugTools.setRootLevel( "OFF" ); // Bio-Formats
-		if ( ! ImageSuite3D.isAvailable() ) return false;
-		setSettings();
-		return true;
+		if ( ! ImageSuite3D.isAvailable() ) throw new RuntimeException( "Please enable the 3D Image Suite update site!" );
 	}
 
 	protected void processImagePlus( ImagePlus imagePlus, RandomAccessibleInterval< BitType > cellMask )

@@ -7,14 +7,14 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
 @Plugin(type = Command.class, menuPath = "Plugins>Spindle3D>Spindle3D Process Current Image..." )
-public class Spindle3DProcessCurrentImageCommand< R extends RealType< R > > extends Spindle3DCommand
+public class Spindle3DCurrentImageProcessorCommand< R extends RealType< R > > extends Spindle3DProcessor implements Command
 {
 	@Parameter ( label = "Input Image" )
 	public ImagePlus inputImagePlus;
 
 	public void run()
 	{
-		if ( ! fetchSettingAndInit() ) return;
+		setSettings();
 		processImagePlus( inputImagePlus, null );
 	}
 }

@@ -1,29 +1,17 @@
-package de.embl.cba.spindle3d.command;
+package de.embl.cba.spindle3d.command.advanced;
 
-import de.embl.cba.morphometry.Logger;
-import net.imglib2.type.numeric.RealType;
-import org.scijava.command.Command;
+import de.embl.cba.spindle3d.command.Spindle3DProcessor;
 import org.scijava.plugin.Parameter;
-import org.scijava.plugin.Plugin;
 
-import java.io.File;
-
-
-@Plugin(type = Command.class, menuPath = "Plugins>Spindle3D>Spindle3D Process File (Advanced)..." )
-public class Spindle3DAdvancedCommand< R extends RealType< R > > extends Spindle3DCommand< R >
+public class Spindle3DAdvancedProcessor extends Spindle3DProcessor
 {
-	@Parameter ( label = "Input Image File" )
-	public File inputImageFile;
-
 	@Parameter ( label = "Voxel size for analysis" )
 	public double voxelSizeForAnalysis = settings.voxelSizeForAnalysis;
-
-	@Parameter ( label = "DNA threshold factor" )
-	public double dnaThresholdFactor = settings.initialThresholdFactor;
 
 	@Parameter ( label = "Minimum dynamic range [gray value]" )
 	public int minimalDynamicRange = settings.minimalDynamicRange;
 
+	// TODO: Remove?
 	@Parameter ( label = "Maximal metaphase plate length [um]" )
 	public double maxMetaphasePlateLength = settings.maxMetaphasePlateLength;
 
@@ -42,34 +30,19 @@ public class Spindle3DAdvancedCommand< R extends RealType< R > > extends Spindle
 	@Parameter ( label = "Show intermediate plots" )
 	public boolean showIntermediatePlots = false;
 
-//	@Parameter ( label = "Cell ROI detection macro file (optional)", required = false )
-	public File macroFile;
-
 	public boolean saveResults = true;
 
-	@Override
-	public void run()
+	protected void setAdvancedSettings()
 	{
-		if ( ! fetchSettingAndInit() ) return;
-		processFile( inputImageFile.toString() );
-	}
+		setSettings();
 
-	@Override
-	protected void setSettings()
-	{
-		settings.smoothSpindle = smoothSpindle;
-		settings.showIntermediateImages = showIntermediateImages;
 		settings.showIntermediatePlots = showIntermediatePlots;
+		settings.showIntermediateImages = showIntermediateImages;
+		settings.smoothSpindle = smoothSpindle;
 		settings.voxelSizeForAnalysis = voxelSizeForAnalysis;
-		settings.maxMetaphasePlateLength = maxMetaphasePlateLength;
+		settings.maxMetaphasePlateLength = maxMetaphasePlateLength; // TODO: Remove?
 		settings.axialPoleRefinementRadius = axialPoleRefinementRadius;
 		settings.lateralPoleRefinementRadius = lateralPoleRefinementRadius;
-		settings.outputDirectory = outputDirectory;
-		settings.initialThresholdFactor = dnaThresholdFactor;
 		settings.minimalDynamicRange = minimalDynamicRange;
-		settings.version = version;
-		settings.roiDetectionMacro = macroFile;
-
-		Logger.log( settings.toString() );
 	}
 }

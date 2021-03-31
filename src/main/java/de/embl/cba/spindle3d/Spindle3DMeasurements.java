@@ -48,7 +48,7 @@ public class Spindle3DMeasurements
 	public Double cellVolume = Double.NaN;
 	public String log = "";
 
-	private HashMap< Integer, Map< String, Object > > objectMeasurements;
+	private transient HashMap< Integer, Map< String, Object > > objectMeasurements;
 
 	public Spindle3DMeasurements( HashMap< Integer, Map< String, Object > > objectMeasurements )
 	{
