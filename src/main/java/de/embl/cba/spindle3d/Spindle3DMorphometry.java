@@ -225,9 +225,8 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		createIsotropicallyResampledImages();
 
-		measureInitialThreshold( "DNA", dna, cellMask, settings.voxelSizeForInitialDNAThreshold );
-
-		createInitialDnaMask( dna, measurements.dnaInitialThreshold );
+		final double initialThreshold = measureInitialThreshold( "DNA", this.dna, cellMask, settings.voxelSizeForInitialDNAThreshold );
+		createInitialDnaMask( dna, initialThreshold );
 
 		EllipsoidVectors dnaEllipsoidVectors = fitEllipsoid( initialDnaMask );
 
@@ -251,7 +250,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		measureDnaThreshold();
 
-		createDnaMaskAndMeasureDnaVolume( dnaAlignedDna, measurements.dnaVolumeThreshold );
+		createDnaMaskAndMeasureDnaVolume( dnaAlignedDna, measurements.dnaThreshold );
 
 		measurements.spindleThreshold = measureSpindleThreshold( dnaAlignedTubulin, dnaAlignedDnaMask );
 
@@ -365,7 +364,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		IJ.log( "DNA Otsu threshold: " + thresholdOtsu );
 
-		measurements.dnaVolumeThreshold = thresholdOtsu;
+		measurements.dnaThreshold = thresholdOtsu;
 	}
 
 	private void measureSpindleWidth( RandomAccessibleInterval< BitType > alignedSpindleMask )
@@ -701,7 +700,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		}
 	}
 
-	private void measureInitialThreshold( final String channel, RandomAccessibleInterval< R > rai, RandomAccessibleInterval< BitType > mask, double voxelSizeForInitialThreshold )
+	private double measureInitialThreshold( final String channel, RandomAccessibleInterval< R > rai, RandomAccessibleInterval< BitType > mask, double voxelSizeForInitialThreshold )
 	{
 		final double[] scalingFactors = getScalingFactors( new double[]{
 						settings.voxelSizeForAnalysis,
@@ -735,10 +734,11 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		double dnaInitialThreshold = ( minMaxValues.getB() - minMaxValues.getA() ) * settings.initialDnaThresholdFactor + minMaxValues.getA() ;
 		IJ.log( channel + " initial threshold = ( max - min ) * factor + min: " + dnaInitialThreshold );
 
-		measurements.dnaInitialThreshold = dnaInitialThreshold;
 
-		if ( measurements.dnaInitialThreshold < settings.minimalDynamicRange )
+		if ( dnaInitialThreshold < settings.minimalDynamicRange )
 			throwMeasurementError( "Analysis interrupted: Too low dynamic range in DNA image" );
+
+		return dnaInitialThreshold;
 	}
 
 	private void createInitialDnaMask( RandomAccessibleInterval< R > dna, double dnaThreshold )

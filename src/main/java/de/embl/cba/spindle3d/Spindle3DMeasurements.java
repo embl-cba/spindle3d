@@ -2,7 +2,6 @@ package de.embl.cba.spindle3d;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import de.embl.cba.morphometry.Logger;
 import de.embl.cba.morphometry.Measurements;
 import ij.IJ;
 
@@ -24,8 +23,7 @@ public class Spindle3DMeasurements
 	public static transient final String SPINDLE_ANGLE_DEGREES = "Spindle_Angle_Degrees";
 
 	public String version;
-	public Double dnaVolumeThreshold = Double.NaN;
-	public Double dnaInitialThreshold = Double.NaN;
+	public Double dnaThreshold = Double.NaN;
 	public Double metaphasePlateLength = Double.NaN;
 	public Double metaphasePlateWidth = Double.NaN;
 	public Double chromatinVolume = Double.NaN;
@@ -60,9 +58,7 @@ public class Spindle3DMeasurements
 
 		add( "Version", version );
 
-		add( "DNA_Initial_Threshold", dnaInitialThreshold );
-
-		add( "DNA_Volume_Threshold", dnaVolumeThreshold );
+		add( "DNA_Threshold", dnaThreshold );
 
 		add( addLengthUnit( "MetaphasePlate_Width" ), metaphasePlateWidth );
 
