@@ -1,7 +1,6 @@
 package de.embl.cba.spindle3d.command;
 
 import de.embl.cba.morphometry.ImageSuite3D;
-import de.embl.cba.morphometry.Logger;
 import de.embl.cba.morphometry.Measurements;
 import de.embl.cba.morphometry.Utils;
 import de.embl.cba.spindle3d.Spindle3DMeasurements;
@@ -23,7 +22,6 @@ import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.RealType;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.ItemVisibility;
-import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.script.ScriptService;
 
@@ -34,7 +32,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class Spindle3DProcessor< R extends RealType< R > >
+public abstract class Spindle3DProcessor
 {
 	public Spindle3DSettings settings = new Spindle3DSettings();
 
@@ -44,6 +42,9 @@ public abstract class Spindle3DProcessor< R extends RealType< R > >
 	@Parameter
 	public ScriptService scriptService;
 
+	@Parameter( visibility = ItemVisibility.MESSAGE )
+	public String version = "Spindle Morphometry Version: " + Spindle3DVersion.VERSION;
+
 	@Parameter ( label = "Output Directory", style = "directory" )
 	public File outputDirectory;
 
@@ -52,9 +53,6 @@ public abstract class Spindle3DProcessor< R extends RealType< R > >
 
 	@Parameter ( label = "Spindle Channel [one-based index]" )
 	public long spindleChannelIndexOneBased = 1;
-
-	@Parameter( visibility = ItemVisibility.MESSAGE )
-	public String version = "Spindle Morphometry Version: " + Spindle3DVersion.VERSION;
 
 	public boolean showIntermediateImages = false;
 	public boolean showIntermediatePlots = false;
@@ -82,8 +80,6 @@ public abstract class Spindle3DProcessor< R extends RealType< R > >
 
 	protected void processFile( File imagePath )
 	{
-		IJ.log( settings.toString() );
-
 		setImageName( imagePath.getName() );
 
 		ImagePlus imagePlus;
@@ -115,7 +111,7 @@ public abstract class Spindle3DProcessor< R extends RealType< R > >
 
 		logStart( imageName );
 
-		final RandomAccessibleInterval< R > raiXYCZ = asRAIXYCZ( imagePlus );
+		final RandomAccessibleInterval< ? > raiXYCZ = asRAIXYCZ( imagePlus );
 
 		setSpindlePolePositions( imagePlus );
 
@@ -149,7 +145,7 @@ public abstract class Spindle3DProcessor< R extends RealType< R > >
 			}
 		}
 
-		if ( saveResults ) saveMeasurements( morphometry );
+		if ( saveResults ) saveMeasurements( );
 
 		logEnd();
 	}
@@ -173,11 +169,11 @@ public abstract class Spindle3DProcessor< R extends RealType< R > >
 		}
 	}
 
-	protected RandomAccessibleInterval< R > asRAIXYCZ( ImagePlus imagePlus )
+	protected RandomAccessibleInterval< ? > asRAIXYCZ( ImagePlus imagePlus )
 	{
 		setSettingsFromImagePlus( imagePlus );
 
-		final RandomAccessibleInterval< R > raiXYCZ = ImageJFunctions.wrapReal( imagePlus );
+		final RandomAccessibleInterval< ? > raiXYCZ = ImageJFunctions.wrapReal( imagePlus );
 
 		settings.dnaChannelIndex = dnaChannelIndexOneBased - 1;
 		settings.tubulinChannelIndex = spindleChannelIndexOneBased - 1;
@@ -191,7 +187,7 @@ public abstract class Spindle3DProcessor< R extends RealType< R > >
 
 		if ( new File( cellMaskPath ).exists() )
 		{
-			final RandomAccessibleInterval< R > rai = ImageJFunctions.wrapReal( Utils.openWithBioFormats( cellMaskPath ) );
+			final RandomAccessibleInterval< RealType > rai = ImageJFunctions.wrapReal( Utils.openWithBioFormats( cellMaskPath ) );
 			RandomAccessibleInterval< BitType > cellMask = Converters.convert( rai, ( i, o ) -> o.set( i.getRealDouble() > 0.5 ? true : false ), new BitType() );
 			IJ.log( "Found cell mask file: " + cellMaskPath );
 			return cellMask;
@@ -220,7 +216,7 @@ public abstract class Spindle3DProcessor< R extends RealType< R > >
 		IJ.log( "Processing image: " + imageName );
 	}
 
-	protected void saveMeasurements( Spindle3DMorphometry morphometry )
+	protected void saveMeasurements( )
 	{
 		final JTable jTable = Measurements.asTable( objectMeasurements );
 

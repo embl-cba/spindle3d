@@ -18,7 +18,7 @@ public class TestSpindleAxialExtendUnderestimation
 		final ImageJ ij = new ImageJ();
 		ij.ui().showUI();
 
-		final Spindle3DFileProcessorCommand< R > command = new Spindle3DFileProcessorCommand<>();
+		final Spindle3DFileProcessorCommand command = new Spindle3DFileProcessorCommand();
 		command.opService = ij.op();
 
 //		command.inputImageFile = new File( "/Users/tischer/Downloads/Incorrect-t82-crop.tif" );

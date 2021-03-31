@@ -21,7 +21,7 @@ public class TestWithSpindlePoleROIs
 
 		final ImageJ ij = new ImageJ();
 
-		final Spindle3DFileProcessorCommand< ? > command = new Spindle3DFileProcessorCommand<>();
+		final Spindle3DFileProcessorCommand command = new Spindle3DFileProcessorCommand();
 		command.opService = ij.op();
 		command.scriptService = ij.script();
 

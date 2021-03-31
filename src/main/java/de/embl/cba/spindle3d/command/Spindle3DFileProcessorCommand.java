@@ -8,9 +8,9 @@ import org.scijava.plugin.Plugin;
 import java.io.File;
 
 @Plugin(type = Command.class, menuPath = "Plugins>Spindle3D>Spindle3D Process File..." )
-public class Spindle3DFileProcessorCommand< R extends RealType< R > > extends Spindle3DProcessor< R > implements Command
+public class Spindle3DFileProcessorCommand extends Spindle3DProcessor implements Command
 {
-	@Parameter ( label = "Input Image File" )
+	@Parameter( label = "Input Image File" )
 	public File inputImageFile;
 
 	public void run()

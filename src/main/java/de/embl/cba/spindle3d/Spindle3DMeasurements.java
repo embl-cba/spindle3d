@@ -31,8 +31,6 @@ public class Spindle3DMeasurements
 	public Double chromatinVolume = Double.NaN;
 	public Double chromatinDilation = Double.NaN;
 	public Double spindleLength = Double.NaN;
-	public Double spindlePoleARefinementDistance = Double.NaN;
-	public Double spindlePoleBRefinementDistance = Double.NaN;
 	public Double spindleThreshold = Double.NaN;
 	public Double spindleSNR = Double.NaN;
 	public Double spindleVolume = Double.NaN;
@@ -73,10 +71,6 @@ public class Spindle3DMeasurements
 		add( addVolumeUnit( "Chromatin_Volume" ), chromatinVolume );
 
 		add( "Chromatin_Dilation", chromatinDilation );
-
-		add( "Spindle_Pole_Refinement_Distance" + SEP + "PoleA" + SEP + Spindle3DMeasurements.LENGTH_UNIT, spindlePoleARefinementDistance );
-
-		add( "Spindle_Pole_Refinement_Distance" + SEP + "PoleB" + SEP + Spindle3DMeasurements.LENGTH_UNIT, spindlePoleBRefinementDistance );
 
 		add( "Tubulin_Spindle_Intensity_Threshold",  spindleThreshold );
 

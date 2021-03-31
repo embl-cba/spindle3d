@@ -870,13 +870,13 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		final ArrayList< double[] > refinedSpindlePoles = refineSpindlePoles( dnaAlignedTubulin, dnaAlignedSpindleMask, spindlePoles, settings.axialPoleRefinementRadius, settings.lateralPoleRefinementRadius );
 
-		measurements.spindlePoleARefinementDistance =
+		IJ.log( "Spindle pole A refinement [um]: " +
 				LinAlgHelpers.distance(
-						spindlePoles.get( 0 ), refinedSpindlePoles.get( 0 ) );
+						spindlePoles.get( 0 ), refinedSpindlePoles.get( 0 ) ) );
 
-		measurements.spindlePoleBRefinementDistance =
+		IJ.log( "Spindle pole A refinement [um]: " +
 				LinAlgHelpers.distance(
-						spindlePoles.get( 1 ), refinedSpindlePoles.get( 1 ) );
+						spindlePoles.get( 1 ), refinedSpindlePoles.get( 1 ) ) );
 
 		measurements.spindleLength = LinAlgHelpers.distance( refinedSpindlePoles.get( 0 ), refinedSpindlePoles.get( 1 ) );
 

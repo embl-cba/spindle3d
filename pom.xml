@@ -78,7 +78,6 @@
 		<imagej-utils.version>0.6.3-SNAPSHOT</imagej-utils.version>
 	</properties>
 
-
 	<repositories>
 		<!-- NB: for SciJava dependencies -->
 		<repository>
@@ -87,26 +86,34 @@
 		</repository>
 	</repositories>
 
-	<dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.0.0-M5</version>
+				<configuration>
+					<skipTests>true</skipTests>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
+	<dependencies>
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>de.embl.cba</groupId>
 			<artifactId>imagej-utils</artifactId>
 			<version>${imagej-utils.version}</version>
 		</dependency>
-
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
-
 	</dependencies>
-
 </project>
 
