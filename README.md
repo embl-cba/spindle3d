@@ -9,3 +9,6 @@ A Fiji plugin for the automated measurement of 3D morphological parameters of vo
   - [X] Spindle3D
   - [X] 3D ImageJ Suite
 - Restart Fiji
+
+## Measurements
+
