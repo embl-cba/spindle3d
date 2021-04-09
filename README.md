@@ -4,7 +4,7 @@ A Fiji plugin for the automated measurement of 3D morphological parameters of vo
 
 ## Publication
 
-To cite this pluing and for a detailed documentation of the image analytical procedures, please check the following preprint / publication: **TODO**
+To cite this plugin and for a detailed documentation of the image analysis procedures, please use the following [bioRxiv preprint](https://biorxiv.org/cgi/content/short/2021.04.08.438956v1).
 
 ## Install
 
