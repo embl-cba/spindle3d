@@ -2,19 +2,7 @@
 
 A Fiji plugin for the automated measurement of 3D morphological parameters of volumetric images of mitotic spindles.
 
-## Publication
-
-To cite this plugin and for a detailed documentation of the image analysis procedures, please use the following [bioRxiv preprint](https://biorxiv.org/cgi/content/short/2021.04.08.438956v1).
-
-## Install
-
-- Install [Fiji](https://fiji.sc/)
-- Start Fiji and [add the following update sites](https://imagej.net/How_to_follow_a_3rd_party_update_site):
-  - [X] Spindle3D
-  - [X] 3D ImageJ Suite
-- Restart Fiji
-
-## Requirements for the input image
+## Input Data Requirements
 
 You can download a set of example images via:
 Plugins > Spindle3D > Spindle3D Download Example Image
@@ -30,7 +18,21 @@ No other preprocessing is required.
 Optional: Cell volume mask
 Spindle3D will look for an additional file called [Name of input image] + ”_CellMask.tif” in the same folder as the input image. The binary image should contain the mask of the cell in question and should have the same dimensions and calibration as the input image. If provided, only the voxels within the cell mask will be used for the analysis.
 
+Spindles tested so far: HeLa Kyoto, HEK293, mouse embryonic stem cells, Ptk2, Bovine 1-cell and 2-cell embryos
 
+We recommend verifying your analysis using the Spindle3D output images (see section "Output images").
+
+## Publication
+
+To cite this plugin and for a detailed documentation of the image analysis procedures, please use the following [bioRxiv preprint](https://biorxiv.org/cgi/content/short/2021.04.08.438956v1).
+
+## Install
+
+- Install [Fiji](https://fiji.sc/)
+- Start Fiji and [add the following update sites](https://imagej.net/How_to_follow_a_3rd_party_update_site):
+  - [X] Spindle3D
+  - [X] 3D ImageJ Suite
+- Restart Fiji
 
 ## Measurements
 
