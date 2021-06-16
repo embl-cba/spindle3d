@@ -11,6 +11,7 @@ import java.util.Map;
 public class Spindle3DMeasurements
 {
 	public static transient final String LENGTH_UNIT = "um";
+	public static transient final String AREA_UNIT = "um2";
 	public static transient final String VOLUME_UNIT = "um3";
 	public static transient final String SEP = "_";
 
@@ -43,6 +44,7 @@ public class Spindle3DMeasurements
 	public Double spindleWidthAvg = Double.NaN;
 	public Double spindleAspectRatio = Double.NaN;
 	public Double cellVolume = Double.NaN;
+	public Double cellSurface = Double.NaN;;
 	public String log = "";
 
 	private transient HashMap< Integer, Map< String, Object > > objectMeasurements;
@@ -95,6 +97,8 @@ public class Spindle3DMeasurements
 		add( SPINDLE_ANGLE_DEGREES, spindleAngle );
 
 		add( "Cell_Volume" + SEP + Spindle3DMeasurements.VOLUME_UNIT, cellVolume );
+
+		add( "Cell_Surface" + SEP + Spindle3DMeasurements.AREA_UNIT, cellSurface );
 
 		add( "Comment", log );
 	}

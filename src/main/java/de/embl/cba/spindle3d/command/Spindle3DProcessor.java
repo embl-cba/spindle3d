@@ -7,6 +7,7 @@ import de.embl.cba.spindle3d.Spindle3DMeasurements;
 import de.embl.cba.spindle3d.Spindle3DMorphometry;
 import de.embl.cba.spindle3d.Spindle3DSettings;
 import de.embl.cba.spindle3d.Spindle3DVersion;
+import de.embl.cba.tables.FileAndUrlUtils;
 import de.embl.cba.tables.Tables;
 import ij.CompositeImage;
 import ij.IJ;
@@ -24,6 +25,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.scijava.ItemVisibility;
 import org.scijava.plugin.Parameter;
 import org.scijava.script.ScriptService;
+import org.scijava.widget.Button;
 
 import javax.swing.*;
 import java.awt.*;
@@ -43,19 +45,26 @@ public abstract class Spindle3DProcessor
 	public ScriptService scriptService;
 
 	@Parameter( visibility = ItemVisibility.MESSAGE )
-	public String version = "Spindle Morphometry Version: " + Spindle3DVersion.VERSION;
+	public String version = "Spindle3D version: " + Spindle3DVersion.VERSION;
 
-	@Parameter ( label = "Output Directory", style = "directory" )
+	@Parameter( label = "Please read the manual", callback = "openManual")
+	Button button;
+
+	@Parameter ( label = "Output directory", style = "directory" )
 	public File outputDirectory;
 
-	@Parameter ( label = "DNA Channel [one-based index]" )
+	@Parameter ( label = "DNA channel [one-based index]" )
 	public long dnaChannelIndexOneBased = 2;
 
-	@Parameter ( label = "Spindle Channel [one-based index]" )
+	@Parameter ( label = "Spindle channel [one-based index]" )
 	public long spindleChannelIndexOneBased = 1;
 
+	@Parameter ( label = "Show intermediate results images" )
 	public boolean showIntermediateImages = false;
+
+	@Parameter ( label = "Show intermediate results plots" )
 	public boolean showIntermediatePlots = false;
+
 	public boolean saveResults = true;
 
 	protected File inputImageFilesParentDirectory = new File("/" );
@@ -71,6 +80,11 @@ public abstract class Spindle3DProcessor
 		settings.showIntermediatePlots = showIntermediatePlots;
 		settings.outputDirectory = outputDirectory;
 		settings.version = version;
+	}
+
+	private void openManual()
+	{
+		FileAndUrlUtils.openURI( "https://github.com/tischi/spindle3d/blob/master/README.md#Publication" );
 	}
 
 	public HashMap< Integer, Map< String, Object > > getObjectMeasurements()
@@ -212,7 +226,7 @@ public abstract class Spindle3DProcessor
 
 	protected void logStart( String imageName )
 	{
-		IJ.log( "\n## Spindle Morphometry Measurements" );
+		IJ.log( "\n## Spindle3D Measurements" );
 		IJ.log( "Processing image: " + imageName );
 	}
 

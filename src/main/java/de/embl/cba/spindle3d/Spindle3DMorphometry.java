@@ -20,6 +20,9 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.measure.Calibration;
 
+import mcib3d.geom.Object3D;
+import mcib3d.geom.Objects3DPopulation;
+import mcib3d.image3d.ImageByte;
 import net.imagej.ops.OpService;
 import net.imglib2.*;
 import net.imglib2.RandomAccess;
@@ -51,11 +54,13 @@ import net.imglib2.util.Pair;
 import net.imglib2.util.Util;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
+import org.jetbrains.annotations.NotNull;
 import org.scijava.script.ScriptService;
 import java.util.*;
 
 import static de.embl.cba.morphometry.Angles.angleOfSpindleAxisToXAxisInRadians;
 import static de.embl.cba.morphometry.viewing.BdvViewer.show;
+import static de.embl.cba.spindle3d.util.Utils.*;
 import static de.embl.cba.transforms.utils.Scalings.createRescaledArrayImg;
 import static de.embl.cba.transforms.utils.Transforms.getScalingFactors;
 
@@ -167,11 +172,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		final ImagePlus imp = ImageJFunctions.wrap( Views.permute( raiXYZC, 2, 3 ), "output" );
 
-		final Calibration calibration = new Calibration();
-		calibration.pixelHeight = settings.voxelSizeForAnalysis;
-		calibration.pixelWidth = settings.voxelSizeForAnalysis;
-		calibration.pixelDepth = settings.voxelSizeForAnalysis;
-		calibration.setUnit( "micrometer" );
+		final Calibration calibration = getCalibration( settings.voxelSizeForAnalysis );
 		imp.setCalibration( calibration );
 
 		final CompositeImage compositeImage = new CompositeImage( imp );
@@ -215,6 +216,17 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		compositeImage.setDisplayRange( 0, 2 * contrastLimit );
 
 		return compositeImage;
+	}
+
+	@NotNull
+	private Calibration getCalibration( double voxelSize )
+	{
+		final Calibration calibration = new Calibration();
+		calibration.pixelHeight = voxelSize;
+		calibration.pixelWidth = voxelSize;
+		calibration.pixelDepth = voxelSize;
+		calibration.setUnit( "micrometer" );
+		return calibration;
 	}
 
 	private String measure()
@@ -276,7 +288,11 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		measurements.spindleVolume = measureVolume( spindleAlignedSpindleMask );
 
-		if ( spindleAlignedCellMask != null ) measurements.cellVolume = measureVolume( spindleAlignedCellMask );
+		if ( spindleAlignedCellMask != null )
+		{
+			measurements.cellVolume = measureVolume( spindleAlignedCellMask );
+			measurements.cellSurface = measureSurface( spindleAlignedCellMask, getCalibration( settings.voxelSizeForAnalysis ) );
+		}
 
 		measurements.tubulinSpindleIntensityVariation
 				= Utils.measureCoefficientOfVariation(
@@ -296,6 +312,15 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		measureSpindleAxisToCoverslipPlaneAngle( dnaAlignedSpindlePoles );
 
 		return Spindle3DMeasurements.ANALYSIS_FINISHED;
+	}
+
+	private double measureSurface( RandomAccessibleInterval< BitType > spindleAlignedCellMask, Calibration calibration )
+	{
+		final ImageByte imageByte = new ImageByte( asImagePlus( spindleAlignedCellMask, "", calibration ) );
+		Objects3DPopulation objects3DPopulation = new Objects3DPopulation( imageByte, 0 );
+		final Object3D object = objects3DPopulation.getObject( 0 );
+		final double areaUnit = object.getAreaUnit();
+		return areaUnit;
 	}
 
 	private void createCellMask()
@@ -796,7 +821,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 	private EllipsoidVectors fitEllipsoid( RandomAccessibleInterval< BitType > mask )
 	{
 		IJ.log( "Determining DNA axes..." );
-		final EllipsoidVectors ellipsoidVectors = Ellipsoids3DImageSuite.fitEllipsoid( Utils.getAsImagePlusMovie( mask, "" ) );
+		final EllipsoidVectors ellipsoidVectors = Ellipsoids3DImageSuite.fitEllipsoid( asImagePlus( mask, "" ) );
 
 		ellipsoidVectors.shortestAxisLength *= settings.voxelSizeForAnalysis;
 		ellipsoidVectors.middleAxisLength *= settings.voxelSizeForAnalysis;
