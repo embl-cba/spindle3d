@@ -14,6 +14,24 @@ To cite this plugin and for a detailed documentation of the image analysis proce
   - [X] 3D ImageJ Suite
 - Restart Fiji
 
+## Requirements for the input image
+
+You can download a set of example images via:
+Plugins > Spindle3D > Spindle3D Download Example Image
+
+Spindle3D quantifies spindle and chromatin morphology in 2-colour confocal image stacks. It requires fluorescent labellings of microtubules (e.g. tubulin-GFP, anti-tubulin immunostainings, etc.) in one channel, and chromatin (e.g. histone-GFP, DAPI, etc.) in the other.  
+
+Please make sure to save a crop of your spindle of interest before the analysis. This will save computing time and prevent erroneous analysis. For cropping in Fiji, we recommend using the rectangular selection tool for drawing a region of interest around your spindle. Next copy your selection [Image > Duplicate > Duplicate stack] and save that copy.
+
+Please make sure that your input image is calibrated, i.e. the xy-length of your voxels and the z-step size are annotated in your image metadata. In Fiji, you can verify this in [Image > Properties].  
+
+No other preprocessing is required. 
+
+Optional: Cell volume mask
+Spindle3D will look for an additional file called [Name of input image] + ”_CellMask.tif” in the same folder as the input image. The binary image should contain the mask of the cell in question and should have the same dimensions and calibration as the input image. If provided, only the voxels within the cell mask will be used for the analysis.
+
+
+
 ## Measurements
 
 <img src="./doc/images/measurements.png" width="800">
