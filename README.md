@@ -2,9 +2,30 @@
 
 A Fiji plugin for the automated measurement of 3D morphological parameters of volumetric images of mitotic spindles.
 
+## Input Data Requirements
+
+You can download a set of example images via:
+Plugins > Spindle3D > Spindle3D Download Example Image
+
+Spindle3D quantifies spindle and chromatin morphology in 2-colour confocal image stacks. It requires fluorescent labellings of microtubules (e.g. tubulin-GFP, anti-tubulin immunostainings, etc.) in one channel, and chromatin (e.g. histone-GFP, DAPI, etc.) in the other.  
+
+Please make sure to save a crop of your spindle of interest before the analysis. This will save computing time and prevent erroneous analysis. For cropping in Fiji, we recommend using the rectangular selection tool for drawing a region of interest around your spindle. Next copy your selection [Image > Duplicate > Duplicate stack] and save that copy.
+
+Please make sure that your input image is calibrated, i.e. the xy-length of your voxels and the z-step size are annotated in your image metadata. In Fiji, you can verify this in [Image > Properties].  
+
+No other preprocessing is required. 
+
+Optional: Cell volume mask
+Spindle3D will look for an additional file called [Name of input image] + ”_CellMask.tif” in the same folder as the input image. The binary image should contain the mask of the cell in question and should have the same dimensions and calibration as the input image. If provided, only the voxels within the cell mask will be used for the analysis.
+
+Disclaimer: As spindle and chromatin morphology can be very variable in different systems, we cannot guarantee that our analysis works for every spindle type or data set. Please feel encouraged to share your experiences with us!
+Spindles tested so far: HeLa Kyoto, HEK293, mouse embryonic stem cells, Ptk2, Bovine 1-cell and 2-cell embryos
+
+We recommend verifying your analysis using the Spindle3D output images (see section "Output images").
+
 ## Publication
 
-To cite this pluing and for a detailed documentation of the image analytical procedures, please check the following preprint / publication: **TODO**
+To cite this plugin and for a detailed documentation of the image analysis procedures, please use the following [bioRxiv preprint](https://biorxiv.org/cgi/content/short/2021.04.08.438956v1).
 
 ## Install
 
@@ -18,63 +39,63 @@ To cite this pluing and for a detailed documentation of the image analytical pro
 
 <img src="./doc/images/measurements.png" width="800">
 
-Each analysis will generate an output table with all morphometric measurements. 
+Each analysis will generate an output table with the following morphometric measurements. 
 
-#### Cell Volume (µm3): 
+#### Cell Volume (µm3)
 Volume of the cell mask, if provided (see “Requirements for input image”).
 
-#### Chromatin Dilation:
+#### Chromatin Dilation
 Measure of a central opening within the metaphase plate.
 
-#### Chromatin Volume (µm3):
+#### Chromatin Volume (µm3)
 Volume of the segmented chromatin signal.
 
-#### DNA Threshold:
+#### DNA Threshold
 Threshold value that was applied for the volumetric segmentation of the chromatin.
 
-#### Metaphase Plate Length (µm):
+#### Metaphase Plate Length (µm)
 Average diameter of the metaphase plate.
 
-#### Metaphase Plate Width (µm):
+#### Metaphase Plate Width (µm)
 Average thickness of the metaphase plate along the direction of the spindle axis.
 
-#### Spindle Angle (Degrees):
+#### Spindle Angle (Degrees)
 Tilt angle between the spindle axis and the xy plane of the original coordinate system.
 
-#### Spindle-Aspect Ratio:
+#### Spindle-Aspect Ratio
 Ratio between spindle length and width.
 
-#### Spindle-Center-To-Metaphase-Plate-Center Distance (µm):
+#### Spindle-Center-To-Metaphase-Plate-Center Distance (µm)
 The distance between the center of the segmented chromatin and the center of the segmented spindle.
 
-#### Spindle Intensity Variation:
+#### Spindle Intensity Variation
 Coefficient of variation of the gray values within the spindle mask. 
 
-#### Spindle Length (µm):
+#### Spindle Length (µm)
 Spindle pole-to-pole distance.
 
-#### Spindle SNR:
+#### Spindle SNR
 The signal-to-noise ratio between the average spindle tubulin signal and the outside tubulin signal
 
-#### Spindle Volume (µm3):
+#### Spindle Volume (µm3)
 Volume of the segmented tubulin signal. 
 
-#### Spindle Width Avg (µm):
+#### Spindle Width Avg (µm)
 Average width of the segmented spindle (perpendicular to the spindle axis).
 
-#### Spindle Width Max (µm):
+#### Spindle Width Max (µm)
 Maximum width of the segmented spindle.
 
-#### Spindle Width Min (µm):
+#### Spindle Width Min (µm)
 Minimum width of the segmented spindle. 
 
-#### Tubulin Cellular Average Intensity:
+#### Tubulin Cellular Average Intensity
 Mean voxel gray value within the cell mask, if a cell mask was provided (see “Requirements for input image”). Note: This is the raw, non-background corrected value!
 
-#### Tubulin Spindle Average Intensity: 
+#### Tubulin Spindle Average Intensity
 Mean voxel gray value within the spindle mask. Note: This is the raw, non-background corrected value!
 
-#### Tubulin Spindle Intensity Threshold:
+#### Tubulin Spindle Intensity Threshold
 Threshold applied for the volumetric segmentation of the spindle. 
 
 
