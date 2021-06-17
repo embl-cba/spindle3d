@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import de.embl.cba.morphometry.Measurements;
 import ij.IJ;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -96,11 +97,23 @@ public class Spindle3DMeasurements
 
 		add( SPINDLE_ANGLE_DEGREES, spindleAngle );
 
-		add( "Cell_Volume" + SEP + Spindle3DMeasurements.VOLUME_UNIT, cellVolume );
+		add( getCellVolumeMeasurementName(), cellVolume );
 
-		add( "Cell_Surface" + SEP + Spindle3DMeasurements.AREA_UNIT, cellSurface );
+		add( getCellSurfaceMeasurementName(), cellSurface );
 
 		add( "Comment", log );
+	}
+
+	@NotNull
+	public static String getCellVolumeMeasurementName()
+	{
+		return "Cell_Volume" + SEP + Spindle3DMeasurements.VOLUME_UNIT;
+	}
+
+	@NotNull
+	public static String getCellSurfaceMeasurementName()
+	{
+		return "Cell_Surface" + SEP + Spindle3DMeasurements.AREA_UNIT;
 	}
 
 	private void add( String name, Object value )

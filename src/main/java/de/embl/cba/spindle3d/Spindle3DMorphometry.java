@@ -799,7 +799,11 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		dnaAlignedTubulin = transformImage( transform3D, tubulin );
 		dnaAlignedDna = transformImage( transform3D, dna );
 		dnaAlignedInitialDnaMask = transformImage( transform3D, initialDnaMask );
-		if ( cellMask != null ) dnaAlignedCellMask = transformImage( transform3D, cellMask );
+
+		if ( cellMask != null )
+		{
+			dnaAlignedCellMask = transformImage( transform3D, cellMask );
+		}
 
 		if ( settings.showIntermediateImages )
 		{
