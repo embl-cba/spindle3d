@@ -23,6 +23,7 @@ public class TestWithCellMask
 		DebugTools.setRootLevel("OFF");
 
 		final ImageJ ij = new ImageJ();
+		ij.ui().showUI();
 
 		final Spindle3DFileProcessorCommand command = new Spindle3DFileProcessorCommand();
 		command.opService = ij.op();
@@ -43,7 +44,7 @@ public class TestWithCellMask
 		final Double surface = (Double) measured.get( Spindle3DMeasurements.getCellSurfaceMeasurementName() );
 		final Double volume = (Double) measured.get( Spindle3DMeasurements.getCellVolumeMeasurementName() );
 
-		Assert.assertEquals( surface, 1600, 50 );
+		Assert.assertEquals( surface, 1000, 150 );
 		Assert.assertEquals( volume, 2488, 50 );
 	}
 }

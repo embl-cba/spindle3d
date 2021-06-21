@@ -18,9 +18,13 @@ import de.embl.cba.transforms.utils.Transforms;
 import ij.CompositeImage;
 import ij.IJ;
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.measure.Calibration;
 
+import ij.plugin.Duplicator;
+import inra.ijpb.measure.IntrinsicVolumes3D;
 import mcib3d.geom.Object3D;
+import mcib3d.geom.Object3DVoxels;
 import mcib3d.geom.Objects3DPopulation;
 import mcib3d.image3d.ImageByte;
 import net.imagej.ops.OpService;
@@ -292,6 +296,8 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		{
 			measurements.cellVolume = measureVolume( spindleAlignedCellMask );
 			measurements.cellSurface = measureSurface( spindleAlignedCellMask, getCalibration( settings.voxelSizeForAnalysis ) );
+			measureSurface( dnaAlignedCellMask, getCalibration( settings.voxelSizeForAnalysis ) );
+			measureSurface( cellMask, getCalibration( settings.voxelSizeForAnalysis ) );
 		}
 
 		measurements.tubulinSpindleIntensityVariation
@@ -314,13 +320,34 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		return Spindle3DMeasurements.ANALYSIS_FINISHED;
 	}
 
-	private double measureSurface( RandomAccessibleInterval< BitType > spindleAlignedCellMask, Calibration calibration )
+
+	/**
+	 * see this discussion: https://github.com/tischi/spindle3d/issues/30
+	 *
+	 * @param mask
+	 * @param calibration
+	 * @return
+	 */
+	private double measureSurface( RandomAccessibleInterval< BitType > mask, Calibration calibration )
 	{
-		final ImageByte imageByte = new ImageByte( asImagePlus( spindleAlignedCellMask, "", calibration ) );
+		final Duplicator duplicator = new Duplicator();
+		// force into RAM
+		ImagePlus imagePlus = duplicator.run( asImagePlus( mask, "", calibration ) );
+
+		// MLJ
+		//ImageStack imageStack = imagePlus.getImageStack();
+		//final double[] surfaceAreas = IntrinsicVolumes3D.surfaceAreas( imageStack, new int[]{ 255 }, imagePlus.getCalibration(), 13 );
+
+		// 3D Image Suite (https://github.com/tischi/spindle3d/issues/30)
+		final ImageByte imageByte = new ImageByte( imagePlus );
 		Objects3DPopulation objects3DPopulation = new Objects3DPopulation( imageByte, 0 );
 		final Object3D object = objects3DPopulation.getObject( 0 );
-		final double areaUnit = object.getAreaUnit();
-		return areaUnit;
+		//final double areaPixels = object.getAreaPixels();
+		//final double areaUnit = object.getAreaUnit();
+		final double areaPixelsCorrected = ((Object3DVoxels) object).getAreaPixelsCorrected();
+		final double areaUnitCorrected = areaPixelsCorrected * calibration.pixelWidth * calibration.pixelWidth;
+		//final double volumeUnit = object.getVolumeUnit();
+		return areaUnitCorrected;
 	}
 
 	private void createCellMask()
