@@ -44,6 +44,9 @@ Each analysis will generate an output table with the following morphometric meas
 #### Cell Volume (µm3)
 Volume of the cell mask, if provided (see “Requirements for input image”).
 
+#### Cell surface area (µm2)
+Surface area of the cell mask, if provided (see “Requirements for input image”).
+
 #### Chromatin Dilation
 Measure of a central opening within the metaphase plate.
 
@@ -110,17 +113,15 @@ Threshold applied for the volumetric segmentation of the spindle.
 
 You can open your input image and start the analysis via:
 - Plugins > Spindle3D > Spindle3D Process Current Image
-- Plugins > Spindle3D > Spindle3D Process Current Image (Advanced)
 
 Alternatively, you can specify the location of your input image and start the analysis via:
 - Plugins > Spindle3D > Spindle3D Process File
-- Plugins > Spindle3D > Spindle3D Process File (Advanced)
 
 <img src="./doc/images/plugin.png" width="800">
 
 ## Spindle3D
 
-This is the basic execution of the morphometric analysis.
+This is the standard execution of the morphometric analysis.
 
 - Input Image File: Specify the location of your input image on your computer. This option will be missing when you specified multiple images in the batch processing mode. 
 - Output Directory: Specify the output folder.
@@ -129,7 +130,9 @@ This is the basic execution of the morphometric analysis.
 
 ## Spindle3D Advanced
 
-In the advanced version of the plugin, you can adjust key parameters to your needs. The overall analysis workflow will be the same as in the basic plugin. 
+The advanced version provides additional and optional settings. Currently, the advanced version is only available upon request! Please contact us if you wish to test the advanced version on your dataset.
+
+The overall analysis workflow will be the same as in the standard plugin. 
 
 - Voxel size for analysis: Here you can specify the isotropic voxel size (in µm) for the analysis. Before the analysis, Spindle3D will resample the input image such that all voxels will have the specified length in x,y and z, regardless of their native voxel dimensions. Please be advised that smaller voxel sizes (“higher resolution”) will lead to longer computation times. We recommend the default 0.25 µm for optimal resolution and processing speed. 
 - Minimum dynamic range: Sets the minimum gray value the DNA signal should at least have above the background. If this range is not met, the analysis will abort. 
