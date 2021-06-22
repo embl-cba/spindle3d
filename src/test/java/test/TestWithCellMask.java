@@ -23,7 +23,7 @@ public class TestWithCellMask
 		DebugTools.setRootLevel("OFF");
 
 		final ImageJ ij = new ImageJ();
-		ij.ui().showUI();
+		//ij.ui().showUI();
 
 		final Spindle3DFileProcessorCommand command = new Spindle3DFileProcessorCommand();
 		command.opService = ij.op();
@@ -37,7 +37,7 @@ public class TestWithCellMask
 		command.dnaChannelIndexOneBased = 2;
 		command.showIntermediateImages = false;
 		command.showIntermediatePlots = false;
-		command.saveResults = true;
+		command.saveResults = false;
 		command.run();
 
 		final Map< String, Object > measured = command.getObjectMeasurements().get( 0 );

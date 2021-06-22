@@ -65,6 +65,7 @@ public class TestReferenceData
 
 		final HashMap< String, Map< String, double[] > > imageToMeasurements = new HashMap<>();
 
+		//13.768170,
 		addReference( imageToMeasurements, "NikonSD_100x_HeLa_02", 13.768170, 12.184211, 3.539942 );
 		addReference( imageToMeasurements, "NikonSD_60x_HeLa_02", 13.024016, 14.684211, 0.858832 );
 		addReference( imageToMeasurements, "ZeissLSM_40x_R1EmESC_01", 10.764525, 8.131579, 1.683764 );
@@ -73,7 +74,6 @@ public class TestReferenceData
 		addReference( imageToMeasurements, "ZeissLSM_40x_CowZygote_01", 20.202104, 17.973684, 10.212573 );
 		addReference( imageToMeasurements, "NikonSD_60x_HEK293SiRTubulin_01", 9.630680, 9.960526, 11.556570 );
 		addReference( imageToMeasurements, "NikonSD_100x_R1EmESC_01", 7.141428, 7.000000, 43.269730 );
-
 
 		final Spindle3DFileProcessorCommand command = new Spindle3DFileProcessorCommand();
 		command.opService = ij.op();

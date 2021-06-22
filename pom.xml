@@ -75,7 +75,7 @@
 		<scijava.app.directory>/Users/tischer/Desktop/Fiji/Fiji-Spindle3D.app</scijava.app.directory>
 		<enforcer.skip>true</enforcer.skip>
 
-		<imagej-utils.version>0.6.3-SNAPSHOT</imagej-utils.version>
+		<imagej-utils.version>0.6.3</imagej-utils.version>
 	</properties>
 
 	<repositories>
