@@ -295,7 +295,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		if ( spindleAlignedCellMask != null )
 		{
 			measurements.cellVolume = measureVolume( spindleAlignedCellMask );
-			measurements.cellSurface =measureSurface( cellMask, getCalibration( settings.voxelSizeForAnalysis ) );
+			measurements.cellSurface = measureSurface( cellMask, getCalibration( settings.voxelSizeForAnalysis ) );
 		}
 
 		measurements.tubulinSpindleIntensityVariation
