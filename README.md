@@ -25,7 +25,9 @@ We recommend verifying your analysis using the Spindle3D output images (see sect
 
 ## Publication
 
-To cite this plugin and for a detailed documentation of the image analysis procedures, please use the following [bioRxiv preprint](https://biorxiv.org/cgi/content/short/2021.04.08.438956v1).
+To cite this plugin and for a detailed documentation of the image analysis procedures, please use the following publication:
+
+Tobias Kletter, Sebastian Reusch, Nils Dempewolf, Christian Tischer and Simone Reber. "Volumetric morphometry reveals spindle width as the best predictor of mammalian spindle scaling." Journal of Cell Biology (2021). DOI: 10.1083/jcb.202106170.
 
 ## Install
 
