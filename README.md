@@ -9,7 +9,9 @@ Plugins > Spindle3D > Spindle3D Download Example Image
 
 Spindle3D quantifies spindle and chromatin morphology in 2-colour confocal image stacks. It requires fluorescent labellings of microtubules (e.g. tubulin-GFP, anti-tubulin immunostainings, etc.) in one channel, and chromatin (e.g. histone-GFP, DAPI, etc.) in the other.  
 
-Please make sure to save a crop of your spindle of interest before the analysis. This will save computing time and prevent erroneous analysis. For cropping in Fiji, we recommend using the rectangular selection tool for drawing a region of interest around your spindle. Next copy your selection [Image > Duplicate > Duplicate stack] and save that copy.
+Please make sure to save a crop of your spindle of interest before the analysis. This will save computing time and prevent erroneous analysis. For cropping in Fiji, we recommend using the rectangular selection tool for drawing a region of interest around your spindle. Next copy your selection [Image > Duplicate > Duplicate stack] and save that copy. 
+
+Important: Spindle3D will abort the analysis if the objects (chromatin or spindle) are in direct contact with any of the image borders (also see 'Troubleshooting').
 
 Please make sure that your input image is calibrated, i.e. the xy-length of your voxels and the z-step size are annotated in your image metadata. In Fiji, you can verify this in [Image > Properties].  
 
@@ -176,4 +178,15 @@ In crowded environments such as these, automated analysis via Spindle3D might fa
 
 To overcome this challenge, we recommend providing a binary cell mask along with your spindle input image. You can create these manually (e.g. using the volume manager in the SCF MPI-CBG Fiji package) or e.g. using the segmentation tool Ilastik (Berg et al., 2019). Next, simply drop the file containing the cell mask ([Name of input image] + ”_CellMask.tif”) in the same folder as your input image and Spindle3D will exclude all pixels that are not within the cell mask from the analysis. 
 
-Another reason for failing analyses might be, that your spindle and/or chromatin are touching any of the image borders. Please make sure to image and crop your spindles in a way that their three-dimensional extents are fully covered. 
+#### Objects are touching image borders
+
+Another reason for failing analyses might be, that your spindle and/or chromatin are touching any of the image borders. To make the morphometric measurements meaningful, please make sure to image and crop your spindles in a way that their three-dimensional extents are fully covered. One way to verify this is to check the orthogonal views [Image > Stacks > Orthogonal Views].
+
+In the examples below, all image borders are highlighted with dashed orange lines:
+
+![Z_Range-06](https://user-images.githubusercontent.com/45814595/150969175-4dc81097-0bf0-4d80-b9e8-c52fb2929f9e.png)
+
+
+In (A) the analysis will fail because the object is directly in contact with the image border, that is the "floor" and the "ceiling" of the image. Please note that this is an extreme example, and that much more subtle contacts could cause the analysis to abort!
+In (B) the entire depth of the object is covered in all directions (XYZ) with extra space to spare.
+
