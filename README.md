@@ -121,6 +121,9 @@ You can open your input image and start the analysis via:
 Alternatively, you can specify the location of your input image and start the analysis via:
 - Plugins > Spindle3D > Spindle3D Process File
 
+Batch processing
+- The batch processing function can be accessed by searching for Spindle3D in the Fiji search bar, selecting the command "Spindle3D Process File" and hitting the "Batch" button in the bottom right corner (see image below). In the next dialogue that opens, make sure to select "inputImageFile" as the parameter to be batch-processed.
+
 <img src="./doc/images/plugin.png" width="800">
 
 ## Spindle3D
