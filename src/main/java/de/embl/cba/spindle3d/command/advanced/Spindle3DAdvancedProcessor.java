@@ -26,7 +26,11 @@ public class Spindle3DAdvancedProcessor extends Spindle3DProcessor
 	@Parameter ( label = "Show intermediate plots" )
 	public boolean showIntermediatePlots = false;
 
+	@Parameter ( label = "Manual Dna Threshold (-1 do not use)" )
+	public int manualDnaThreshold = -1;
+
 	public boolean saveResults = true;
+
 
 	protected void setAdvancedSettings()
 	{
@@ -39,5 +43,6 @@ public class Spindle3DAdvancedProcessor extends Spindle3DProcessor
 		settings.axialPoleRefinementRadius = axialPoleRefinementRadius;
 		settings.lateralPoleRefinementRadius = lateralPoleRefinementRadius;
 		settings.minimalDynamicRange = minimalDynamicRange;
+		settings.dnaManualThreshold = manualDnaThreshold;
 	}
 }

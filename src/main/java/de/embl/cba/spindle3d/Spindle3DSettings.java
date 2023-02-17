@@ -30,6 +30,7 @@ public class Spindle3DSettings<T extends RealType<T> & NativeType< T > >
 	 */
 	public double initialDnaThresholdFactor = 0.5;
 	public int minimalDynamicRange = 7;
+	public int dnaManualThreshold = -1; // -1 = do not use
 
 	/**
 	 * Other
