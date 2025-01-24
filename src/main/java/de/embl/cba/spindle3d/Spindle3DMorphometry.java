@@ -10,7 +10,9 @@ import de.embl.cba.morphometry.geometry.ellipsoids.EllipsoidVectors;
 import de.embl.cba.morphometry.geometry.ellipsoids.Ellipsoids3DImageSuite;
 import de.embl.cba.morphometry.regions.Regions;
 import de.embl.cba.neighborhood.RectangleShape2;
+import de.embl.cba.spindle3d.ellipsoids.EllipsoidVectors;
 import de.embl.cba.spindle3d.util.ProfileAndRadius;
+import de.embl.cba.spindle3d.util.Projection;
 import de.embl.cba.spindle3d.util.ScriptRunner;
 import de.embl.cba.spindle3d.util.Vectors;
 import de.embl.cba.transforms.utils.Scalings;
@@ -18,7 +20,6 @@ import de.embl.cba.transforms.utils.Transforms;
 import ij.CompositeImage;
 import ij.IJ;
 import ij.ImagePlus;
-import ij.ImageStack;
 import ij.measure.Calibration;
 
 import ij.plugin.Duplicator;
@@ -64,6 +65,8 @@ import java.util.*;
 
 import static de.embl.cba.morphometry.Angles.angleOfSpindleAxisToXAxisInRadians;
 import static de.embl.cba.morphometry.viewing.BdvViewer.show;
+import static de.embl.cba.spindle3d.Spindle3DAlgorithms.*;
+import static de.embl.cba.spindle3d.util.BdvViewer.show;
 import static de.embl.cba.spindle3d.util.Utils.*;
 import static de.embl.cba.transforms.utils.Scalings.createRescaledArrayImg;
 import static de.embl.cba.transforms.utils.Transforms.getScalingFactors;
@@ -299,15 +302,15 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		}
 
 		measurements.tubulinSpindleIntensityVariation
-				= Utils.measureCoefficientOfVariation(
+				= computeCoefficientOfVariation(
 						spindleAlignedTublin,
 						spindleAlignedSpindleMask,
 						measurements.spindleThreshold
 				);
 
-		if ( spindleAlignedCellMask != null) measurements.tubulinCellularAverageIntensity = Utils.computeAverage( spindleAlignedTublin, spindleAlignedCellMask );
+		if ( spindleAlignedCellMask != null) measurements.tubulinCellularAverageIntensity = computeAverage( spindleAlignedTublin, spindleAlignedCellMask );
 
-		measurements.tubulinSpindleAverageIntensity = Utils.computeAverage( spindleAlignedTublin, spindleAlignedSpindleMask );
+		measurements.tubulinSpindleAverageIntensity = computeAverage( spindleAlignedTublin, spindleAlignedSpindleMask );
 
 		measureSpindleWidth( spindleAlignedSpindleMask );
 
@@ -317,7 +320,6 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		return Spindle3DMeasurements.ANALYSIS_FINISHED;
 	}
-
 
 	/**
 	 * see this discussion: https://github.com/tischi/spindle3d/issues/30
@@ -410,7 +412,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		//ImageJFunctions.show( Views.permute( Views.addDimension( dnaAlignedDna, 0, 0), 2,3), "DNA" );
 		//ImageJFunctions.show( Views.permute( Views.addDimension( croppedDna, 0, 0), 2,3), "cropped DNA" );
 
-		final double thresholdOtsu = Algorithms.thresholdOtsu( croppedDna );
+		final double thresholdOtsu = thresholdOtsu( croppedDna );
 
 		IJ.log( "DNA Otsu threshold: " + thresholdOtsu );
 
@@ -427,7 +429,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 					2 ).maximum();
 
 		// remove spurious microtubules that may be sticking out
-		projectedMask = Algorithms.open( projectedMask, 2 );
+		projectedMask = open( projectedMask, 2 );
 
 		if ( settings.showIntermediateImages )
 			show( projectedMask,
@@ -447,7 +449,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 	private double measureVolume( RandomAccessibleInterval< BitType > mask )
 	{
-		return Measurements.measureSizeInPixels( mask ) * Math.pow( settings.voxelSizeForAnalysis, 3 );
+		return measureSizeInPixels( mask ) * Math.pow( settings.voxelSizeForAnalysis, 3 );
 	}
 
 	private double measureSpindleThreshold(
@@ -480,7 +482,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		final ArrayList< Double > dnaPeripheryTubulinValues = new ArrayList<>();
 
 		// dilate Dna to create a region within there are bona-fide tubulin intensities
-		RandomAccessibleInterval< BitType > dilateDnaMask = Algorithms.dilate( dnaAlignedDnaMask, 1 );
+		RandomAccessibleInterval< BitType > dilateDnaMask = dilate( dnaAlignedDnaMask, 1 );
 
 		final RandomAccess< BitType > dnaMaskAccess = dnaAlignedDnaMask.randomAccess();
 		final RandomAccess< BitType > dilateDnaMaskAccess = dilateDnaMask.randomAccess();
@@ -529,7 +531,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 			}
 		}
 
-		final double thresholdOtsu = Spindle3DAlgorithms.thresholdOtsu( dnaPeripheryTubulinValues );
+		final double thresholdOtsu = thresholdOtsu( dnaPeripheryTubulinValues );
 
 		final double medianCytoplasm = Utils.median( cytoplasmicTubulinValues );
 		final double madCytoplasm = Utils.mad( cytoplasmicTubulinValues, medianCytoplasm );
@@ -563,6 +565,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		return threshold;
 	}
+
 
 	private FinalInterval createSpindleInterval()
 	{

@@ -2,7 +2,6 @@ package de.embl.cba.spindle3d;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import de.embl.cba.morphometry.Measurements;
 import ij.IJ;
 import org.jetbrains.annotations.NotNull;
 
@@ -118,7 +117,17 @@ public class Spindle3DMeasurements
 
 	private void add( String name, Object value )
 	{
-		Measurements.addMeasurement( objectMeasurements, 0, name, value );
+		addMeasurement( objectMeasurements, 0, name, value );
+	}
+
+	public static void addMeasurement(
+			HashMap< Integer, Map< String, Object > > objectMeasurements,
+			int objectLabel, String name, Object value )
+	{
+		if ( ! objectMeasurements.keySet().contains( objectLabel ) )
+			objectMeasurements.put( objectLabel, new HashMap<>(  ) );
+
+		objectMeasurements.get( objectLabel ).put( name, value );
 	}
 
 	public static String addLengthUnit( String name )
