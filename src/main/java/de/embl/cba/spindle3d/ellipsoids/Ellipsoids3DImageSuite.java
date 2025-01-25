@@ -28,7 +28,7 @@
  */
 package de.embl.cba.spindle3d.ellipsoids;
 
-import de.embl.cba.transforms.utils.Transforms;
+import de.embl.cba.spindle3d.util.Utils;
 import ij.ImagePlus;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Objects3DPopulation;
@@ -63,7 +63,7 @@ public abstract class Ellipsoids3DImageSuite
 
 		final double[] zAxis = new double[]{ 0, 0, 1 };
 		final double[] shortestAxis = ellipsoidVectors.shortestAxis.getArray();
-		AffineTransform3D rotation = Transforms.getRotationTransform3D( zAxis, shortestAxis );
+		AffineTransform3D rotation = Utils.getRotationTransform3D( zAxis, shortestAxis );
 
 		AffineTransform3D combinedTransform = translation.preConcatenate( rotation );
 
@@ -78,7 +78,7 @@ public abstract class Ellipsoids3DImageSuite
 
 		final double[] xAxis = new double[]{ 1, 0, 0 };
 		final double[] longestAxis = ellipsoidVectors.longestAxis.getArray();
-		AffineTransform3D longAxisRotation = Transforms.getRotationTransform3D( xAxis, longestAxis );
+		AffineTransform3D longAxisRotation = Utils.getRotationTransform3D( xAxis, longestAxis );
 		transform3D = transform3D.preConcatenate( longAxisRotation );
 
 		final double[] zAxis = new double[]{ 0, 0, 1 };
@@ -86,7 +86,7 @@ public abstract class Ellipsoids3DImageSuite
 		final double[] shortestAxisInLongestAxisAlignedCoordinateSystem = new double[ 3 ];
 		longAxisRotation.apply( shortestAxis, shortestAxisInLongestAxisAlignedCoordinateSystem );
 
-		AffineTransform3D shortAxisRotation = Transforms.getRotationTransform3D( zAxis, shortestAxisInLongestAxisAlignedCoordinateSystem );
+		AffineTransform3D shortAxisRotation = Utils.getRotationTransform3D( zAxis, shortestAxisInLongestAxisAlignedCoordinateSystem );
 		transform3D = transform3D.preConcatenate( shortAxisRotation );
 
 		return transform3D;

@@ -1,14 +1,11 @@
 package de.embl.cba.spindle3d.command;
 
-import de.embl.cba.morphometry.ImageSuite3D;
-import de.embl.cba.morphometry.Measurements;
-import de.embl.cba.morphometry.Utils;
 import de.embl.cba.spindle3d.Spindle3DMeasurements;
 import de.embl.cba.spindle3d.Spindle3DMorphometry;
 import de.embl.cba.spindle3d.Spindle3DSettings;
 import de.embl.cba.spindle3d.Spindle3DVersion;
-import de.embl.cba.tables.FileAndUrlUtils;
-import de.embl.cba.tables.Tables;
+import de.embl.cba.spindle3d.util.ImageSuite3D;
+import de.embl.cba.spindle3d.util.Utils;
 import ij.CompositeImage;
 import ij.IJ;
 import ij.ImagePlus;
@@ -84,7 +81,7 @@ public abstract class Spindle3DProcessor
 
 	private void openManual()
 	{
-		FileAndUrlUtils.openURI( "https://github.com/tischi/spindle3d/blob/master/README.md#Publication" );
+		Utils.openURI( "https://github.com/tischi/spindle3d/blob/master/README.md#Publication" );
 	}
 
 	public HashMap< Integer, Map< String, Object > > getObjectMeasurements()
@@ -232,13 +229,13 @@ public abstract class Spindle3DProcessor
 
 	protected void saveMeasurements( )
 	{
-		final JTable jTable = Measurements.asTable( objectMeasurements );
+		final JTable jTable = Spindle3DMeasurements.asTable( objectMeasurements );
 
 		final File tableOutputFile = new File( getOutputDirectory() + "measurements.txt" );
 
 		IJ.log( "Saving measurements table:\n" + tableOutputFile );
 
-		Tables.saveTable( jTable, tableOutputFile );
+		Utils.saveTable( jTable, tableOutputFile );
 	}
 
 	protected String getOutputDirectory()
@@ -284,7 +281,7 @@ public abstract class Spindle3DProcessor
 			relativeInputImagePath = inputImageFile.toPath();
 		}
 
-		Measurements.addMeasurement(
+		Spindle3DMeasurements.addMeasurement(
 				objectMeasurements,
 				0,
 				path_inputImage,

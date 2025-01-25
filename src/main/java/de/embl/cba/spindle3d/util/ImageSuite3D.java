@@ -26,32 +26,23 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package de.embl.cba.spindle3d.ellipsoids;
+package de.embl.cba.spindle3d.util;
 
-import static de.embl.cba.spindle3d.ellipsoids.EllipsoidsMLJ.*;
+import ij.IJ;
+import mcib3d.image3d.ImageInt;
 
-public class EllipsoidMLJ
+public class ImageSuite3D
 {
-
-	public double[] center = new double[ 3 ];
-	public double[] radii = new double[ 3 ];
-	public double[] eulerAnglesInDegrees = new double[ 3 ];
-
-	@Override
-	public String toString()
-	{
-		String s = "";
-		s += "\n## MorpholibJ ellipsoid parameters:";
-		s += "\ncenter_X [pixels]: " + center[0];
-		s += "\ncenter_Y [pixels]: " + center[1];
-		s += "\ncenter_Z [pixels]: " + center[2];
-		s += "\nradii_0 [pixels]: " + radii[0];
-		s += "\nradii_1 [pixels]: " + radii[1];
-		s += "\nradii_2 [pixels]: " + radii[2];
-		s += "\nphi [degrees]: " + eulerAnglesInDegrees[ PHI ];
-		s += "\ntheta [degrees]: " + eulerAnglesInDegrees[ THETA ];
-		s += "\npsi [degrees]: " + eulerAnglesInDegrees[ PSI ];
-
-		return s;
+	public static boolean isAvailable() {
+		try
+		{
+			ImageInt.class.getName();
+			return true;
+		}
+		catch (final NoClassDefFoundError err)
+		{
+			IJ.showMessage( "Please install the 3D Image Suite!\n[ Help > Update > Manage Update Sites ]" );
+		}
+		return false;
 	}
 }

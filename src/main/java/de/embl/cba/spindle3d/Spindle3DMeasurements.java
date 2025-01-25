@@ -2,11 +2,12 @@ package de.embl.cba.spindle3d;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import de.embl.cba.spindle3d.util.Utils;
 import ij.IJ;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
+import javax.swing.*;
+import java.util.*;
 
 public class Spindle3DMeasurements
 {
@@ -147,5 +148,70 @@ public class Spindle3DMeasurements
 		s += gson.toJson( this );
 		s += "\n";
 		return s;
+	}
+
+	public static JTable asTable( HashMap< Integer, Map< String, Object > > objectMeasurements )
+	{
+		final ArrayList< HashMap< Integer, Map< String, Object > > > timepoints = new ArrayList<>();
+		timepoints.add( objectMeasurements );
+		return Utils.createJTableFromStringList( measurementsAsTableRowsStringList( timepoints, "\t" ), "\t" );
+	}
+
+	public static JTable asTable(
+			ArrayList< HashMap< Integer, Map< String, Object > > > timepoints )
+	{
+		return Utils.createJTableFromStringList(
+				measurementsAsTableRowsStringList( timepoints, "\t" ),
+				"\t" );
+	}
+
+	public static ArrayList< String > measurementsAsTableRowsStringList(
+			ArrayList< HashMap< Integer,
+					Map< String, Object > > > measurementsTimePointList,
+			String delim )
+	{
+
+		final Set< Integer > objectLabelsFirstTimePoint =
+				measurementsTimePointList.get( 0 ).keySet();
+
+		final Set< String > measurementSet =
+				measurementsTimePointList.get( 0 ).get(
+						objectLabelsFirstTimePoint.iterator().next() ).keySet();
+
+		List< String  > measurementNames = new ArrayList< String >( measurementSet );
+		Collections.sort( measurementNames );
+
+		final ArrayList< String > lines = new ArrayList<>();
+
+		String header = "Object_Label";
+		header += delim + CENTROID + SEP + TIME + SEP + FRAME_UNITS;
+		for ( String measurementName : measurementNames )
+			header += delim + measurementName ;
+
+		lines.add( header );
+
+		for ( int t = 0; t < measurementsTimePointList.size(); ++t )
+		{
+			final HashMap< Integer, Map< String, Object > > measurements
+					= measurementsTimePointList.get( t );
+
+			final Set< Integer > objectLabels = measurements.keySet();
+
+			for ( int label : objectLabels )
+			{
+				final Map< String, Object > measurementsMap = measurements.get( label );
+
+				String values = String.format( "%05d", label );
+
+				values += delim + String.format( "%05d", t + 1 ); // convert to one-based time points
+
+				for ( String measurementName : measurementNames )
+					values += delim + measurementsMap.get( measurementName );
+
+				lines.add( values );
+			}
+		}
+
+		return lines;
 	}
 }

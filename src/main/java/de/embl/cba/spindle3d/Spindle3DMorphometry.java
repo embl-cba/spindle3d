@@ -3,27 +3,14 @@ package de.embl.cba.spindle3d;
 import bdv.util.AxisOrder;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvOptions;
-import de.embl.cba.morphometry.*;
-import de.embl.cba.morphometry.geometry.CoordinatesAndValues;
-import de.embl.cba.morphometry.geometry.CurveAnalysis;
-import de.embl.cba.morphometry.geometry.ellipsoids.EllipsoidVectors;
-import de.embl.cba.morphometry.geometry.ellipsoids.Ellipsoids3DImageSuite;
-import de.embl.cba.morphometry.regions.Regions;
-import de.embl.cba.neighborhood.RectangleShape2;
 import de.embl.cba.spindle3d.ellipsoids.EllipsoidVectors;
-import de.embl.cba.spindle3d.util.ProfileAndRadius;
-import de.embl.cba.spindle3d.util.Projection;
-import de.embl.cba.spindle3d.util.ScriptRunner;
-import de.embl.cba.spindle3d.util.Vectors;
-import de.embl.cba.transforms.utils.Scalings;
-import de.embl.cba.transforms.utils.Transforms;
+import de.embl.cba.spindle3d.util.*;
 import ij.CompositeImage;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.measure.Calibration;
 
 import ij.plugin.Duplicator;
-import inra.ijpb.measure.IntrinsicVolumes3D;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Object3DVoxels;
 import mcib3d.geom.Objects3DPopulation;
@@ -63,13 +50,9 @@ import org.jetbrains.annotations.NotNull;
 import org.scijava.script.ScriptService;
 import java.util.*;
 
-import static de.embl.cba.morphometry.Angles.angleOfSpindleAxisToXAxisInRadians;
-import static de.embl.cba.morphometry.viewing.BdvViewer.show;
 import static de.embl.cba.spindle3d.Spindle3DAlgorithms.*;
 import static de.embl.cba.spindle3d.util.BdvViewer.show;
 import static de.embl.cba.spindle3d.util.Utils.*;
-import static de.embl.cba.transforms.utils.Scalings.createRescaledArrayImg;
-import static de.embl.cba.transforms.utils.Transforms.getScalingFactors;
 
 public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 {
@@ -598,12 +581,12 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 	{
 		dnaAlignedToSpindleAlignedTransform = computeTransform( spindlePoles, spindleCenter );
 
-		spindleAlignedTublin = Transforms.createTransformedView( dnaAlignedTubulin, dnaAlignedToSpindleAlignedTransform );
-		spindleAlignedDna = Transforms.createTransformedView( dnaAlignedDna, dnaAlignedToSpindleAlignedTransform );
-		spindleAlignedDnaMask = Transforms.createTransformedView( dnaAlignedDnaMask, dnaAlignedToSpindleAlignedTransform, new NearestNeighborInterpolatorFactory() );
-		spindleAlignedSpindleMask = Transforms.createTransformedView( dnaAlignedSpindleMask, dnaAlignedToSpindleAlignedTransform, new NearestNeighborInterpolatorFactory() );
+		spindleAlignedTublin = Utils.createTransformedView( dnaAlignedTubulin, dnaAlignedToSpindleAlignedTransform );
+		spindleAlignedDna = Utils.createTransformedView( dnaAlignedDna, dnaAlignedToSpindleAlignedTransform );
+		spindleAlignedDnaMask = Utils.createTransformedView( dnaAlignedDnaMask, dnaAlignedToSpindleAlignedTransform, new NearestNeighborInterpolatorFactory() );
+		spindleAlignedSpindleMask = Utils.createTransformedView( dnaAlignedSpindleMask, dnaAlignedToSpindleAlignedTransform, new NearestNeighborInterpolatorFactory() );
 		if ( dnaAlignedCellMask != null )
-			spindleAlignedCellMask = Transforms.createTransformedView( dnaAlignedCellMask, dnaAlignedToSpindleAlignedTransform, new NearestNeighborInterpolatorFactory() );
+			spindleAlignedCellMask = Utils.createTransformedView( dnaAlignedCellMask, dnaAlignedToSpindleAlignedTransform, new NearestNeighborInterpolatorFactory() );
 
 		spindleAlignedSpindlePoles = new ArrayList<>();
 		for ( int i = 0; i < 2; i++ )
@@ -656,7 +639,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		// rotate spindle along z-axis
 		AffineTransform3D poleToPoleAxisRotation =
-				Transforms.getRotationTransform3D( new double[]{ 0, 0, 1 }, poleToPoleAxis );
+				Utils.getRotationTransform3D( new double[]{ 0, 0, 1 }, poleToPoleAxis );
 		dnaAlignedToSpindleAlignedTransform.preConcatenate( poleToPoleAxisRotation );
 
 		return dnaAlignedToSpindleAlignedTransform;
@@ -705,7 +688,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		final double[] vector = Vectors.vector( coverslipAlignedSpindlePoles.get( 0 ), coverslipAlignedSpindlePoles.get( 1 )  );
 		measurements.spindleAngle =
 				90.0 - Math.abs( 180.0 / Math.PI *
-						Transforms.getAngle( new double[]{ 0, 0, 1 }, vector ) );
+						Utils.getAngle( new double[]{ 0, 0, 1 }, vector ) );
 	}
 
 	private void measureDnaCenterToSpindleCenterDistance( double[] spindleCenter )
@@ -724,7 +707,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		rescaledVolumes = new ArrayList<>();
 
-		scalingFactorsRawToRescaled = Transforms.getScalingFactors( settings.inputVoxelSize, settings.voxelSizeForAnalysis );
+		scalingFactorsRawToRescaled = Utils.getScalingFactors( settings.inputVoxelSize, settings.voxelSizeForAnalysis );
 
 		for ( int c = 0; c < numChannels; c++ )
 		{
@@ -836,18 +819,18 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		if ( settings.showIntermediateImages )
 		{
 			final String aligned = " aligned along DNA shortest axis";
-			show( dnaAlignedTubulin, "tubulin" + aligned, Transforms.origin(),
+			show( dnaAlignedTubulin, "tubulin" + aligned, Utils.origin(),
 					voxelSizesForAnalysis, false );
-			show( dnaAlignedDna, "DNA" + aligned, Transforms.origin(),
+			show( dnaAlignedDna, "DNA" + aligned, Utils.origin(),
 					voxelSizesForAnalysis, false );
 			show( dnaAlignedInitialDnaMask, "DNA initial mask" + aligned,
-					Transforms.origin(), voxelSizesForAnalysis, false );
+					Utils.origin(), voxelSizesForAnalysis, false );
 		}
 	}
 
 	private static < T extends NumericType< T > & NativeType< T > > RandomAccessibleInterval transformImage( AffineTransform3D transform3D, RandomAccessibleInterval< T > image )
 	{
-		return Utils.copyAsArrayImg( Transforms.createTransformedView( image, transform3D, new NearestNeighborInterpolatorFactory(), Transforms.BorderExtension.ExtendBorder ) );
+		return copyAsArrayImg( Utils.createTransformedView( image, transform3D, new NearestNeighborInterpolatorFactory(), Utils.BorderExtension.ExtendBorder ) );
 	}
 
 	private EllipsoidVectors fitEllipsoid( RandomAccessibleInterval< BitType > mask )
@@ -1173,7 +1156,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		for ( int c = 0; c < rescaledVolumes.size(); c++ )
 		{
-			final RandomAccessible transformedRA = Transforms.createTransformedRaView( rescaledVolumes.get( c ),
+			final RandomAccessible transformedRA = Utils.createTransformedRaView( rescaledVolumes.get( c ),
 					rescaledInputToSpindleAlignedTransform, new ClampingNLinearInterpolatorFactory() );
 
 			alignedVolumes.add( Views.interval( transformedRA, crop ) );

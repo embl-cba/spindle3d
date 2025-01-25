@@ -36,16 +36,23 @@ import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.logic.BitType;
 import net.imglib2.view.Views;
 
-import static de.embl.cba.morphometry.Constants.*;
-import static de.embl.cba.morphometry.geometry.ellipsoids.EllipsoidMLJ.*;
 import static java.lang.Math.*;
 
 public abstract class EllipsoidsMLJ
 {
+	public final static int X = 0;
+	public final static int Y = 1;
+	public final static int Z = 2;
+	public final static int[] XYZ = new int[]{ X, Y, Z };
+	final static int XX = 0;
+	final static int YY = 1;
+	final static int ZZ = 2;
+	public final static int XY = 3;
+	public final static int XZ = 4;
+	public final static int YZ = 5;
+	public static final int PHI = 0, THETA = 1, PSI = 2;
 
 	// Adapted from MorpholibJ
-
-
 	public static EllipsoidMLJ computeParametersFromBinaryImage( RandomAccessibleInterval< BitType > binaryImg )
 	{
 		double[] sums = new double[ 3 ];
@@ -220,9 +227,9 @@ public abstract class EllipsoidsMLJ
 			phi     = 0;
 		}
 
-		angles[ EllipsoidMLJ.PHI ] = toDegrees( phi );
-		angles[ EllipsoidMLJ.THETA ] = toDegrees( theta );
-		angles[ EllipsoidMLJ.PSI ] = toDegrees( psi );
+		angles[ EllipsoidsMLJ.PHI ] = toDegrees( phi );
+		angles[ EllipsoidsMLJ.THETA ] = toDegrees( theta );
+		angles[ EllipsoidsMLJ.PSI ] = toDegrees( psi );
 
 		return angles;
 	}
