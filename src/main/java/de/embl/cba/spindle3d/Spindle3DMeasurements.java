@@ -4,6 +4,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import de.embl.cba.spindle3d.util.Utils;
 import ij.IJ;
+import net.imglib2.Cursor;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.type.logic.BitType;
+import net.imglib2.type.numeric.IntegerType;
+import net.imglib2.view.Views;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -11,18 +16,49 @@ import java.util.*;
 
 public class Spindle3DMeasurements
 {
-	public static transient final String LENGTH_UNIT = "um";
-	public static transient final String AREA_UNIT = "um2";
-	public static transient final String VOLUME_UNIT = "um3";
-	public static transient final String SEP = "_";
 
-	public static transient final int ALIGNED_DNA_AXIS = 2;
-	public static transient final String ANALYSIS_FINISHED = "Analysis finished.";
+	public static final String CENTROID = "Centroid";
+
+	public static final String VOLUME = "Volume";
+	public static final String AREA = "Area";
+	public static final String LENGTH = "Length";
+
+	public static final String PERIMETER = "Perimeter";
+	public static final String SURFACE = "Surface";
+
+	public static final String PIXEL_UNIT = "Pixel";
+	public static final String POW = ""; // the ^ character felt to risky
+
+	public static final String SUM_INTENSITY = "SumIntensity";
+	public static final String IMAGE_BOUNDARY_CONTACT = "ImageBoundaryContact";
+
+	public static final String GLOBAL_BACKGROUND_INTENSITY = "GlobalBackgroundIntensity";
+	public static final String SKELETON_TOTAL_LENGTH = "SkeletonTotalLength";
+	public static final String SKELETON_NUMBER_BRANCH_POINTS = "SkeletonNumBranchPoints";
+	public static final String SKELETON_AVG_BRANCH_LENGTH = "SkeletonAvgBranchLength";
+	public static final String SKELETON_LONGEST_BRANCH_LENGTH = "SkeletonLongestBranchLength";
+
+	public static final String SEP = "_";
+	public static final String FRAME_UNITS = "Frames";
+	public static final String TIME = "Time";
+	public static final String VOXEL_SPACING = "VoxelSpacing";
+	public static final String FRAME_INTERVAL = "FrameInterval";
+	public static final String BRIGHTEST_POINT = "BrightestPoint";
+	public static final String RADIUS_AT_BRIGHTEST_POINT = "RadiusAtBrightestPoint";
+	public static final String CONVEX_AREA = "ConvexArea";
+
+	public static final String[] XYZ = new String[]{"X","Y","Z"};
+	public static final String LENGTH_UNIT = "um";
+	public static final String AREA_UNIT = "um2";
+	public static final String VOLUME_UNIT = "um3";
+
+	public static final int ALIGNED_DNA_AXIS = 2;
+	public static final String ANALYSIS_FINISHED = "Analysis finished.";
 
 	// define constants to be accessible in the tests
-	public static transient final String SPINDLE_LENGTH = addLengthUnit( "Spindle_Length" );
-	public static transient final String SPINDLE_WIDTH_AVG = addLengthUnit( "Spindle_Width_Avg" );
-	public static transient final String SPINDLE_ANGLE_DEGREES = "Spindle_Angle_Degrees";
+	public static final String SPINDLE_LENGTH = addLengthUnit( "Spindle_Length" );
+	public static final String SPINDLE_WIDTH_AVG = addLengthUnit( "Spindle_Width_Avg" );
+	public static final String SPINDLE_ANGLE_DEGREES = "Spindle_Angle_Degrees";
 
 	public String version;
 	public Double dnaThreshold = Double.NaN;
@@ -45,10 +81,10 @@ public class Spindle3DMeasurements
 	public Double spindleWidthAvg = Double.NaN;
 	public Double spindleAspectRatio = Double.NaN;
 	public Double cellVolume = Double.NaN;
-	public Double cellSurface = Double.NaN;;
-	public String log = "";
+	public Double cellSurface = Double.NaN;
+    public String log = "";
 
-	private transient HashMap< Integer, Map< String, Object > > objectMeasurements;
+	private final transient HashMap< Integer, Map< String, Object > > objectMeasurements;
 
 	public Spindle3DMeasurements( HashMap< Integer, Map< String, Object > > objectMeasurements )
 	{
@@ -125,7 +161,7 @@ public class Spindle3DMeasurements
 			HashMap< Integer, Map< String, Object > > objectMeasurements,
 			int objectLabel, String name, Object value )
 	{
-		if ( ! objectMeasurements.keySet().contains( objectLabel ) )
+		if ( ! objectMeasurements.containsKey( objectLabel ) )
 			objectMeasurements.put( objectLabel, new HashMap<>(  ) );
 
 		objectMeasurements.get( objectLabel ).put( name, value );
@@ -165,9 +201,49 @@ public class Spindle3DMeasurements
 				"\t" );
 	}
 
+
+	public static < I extends IntegerType< I > >
+	long measureSizeInPixels( RandomAccessibleInterval< I > labeling,
+							  int label )
+	{
+		final Cursor< I > labelCursor = Views.iterable( labeling ).localizingCursor();
+		long size = 0;
+
+		while ( labelCursor.hasNext() )
+		{
+			long value = labelCursor.next().getInteger();
+
+			if( value == label )
+			{
+				size++;
+			}
+		}
+
+		return size;
+	}
+
+	public static long measureSizeInPixels( RandomAccessibleInterval< BitType > mask )
+	{
+
+		final Cursor< BitType > cursor = Views.iterable( mask ).cursor();
+		long size = 0;
+
+		while ( cursor.hasNext() )
+		{
+			if( cursor.next().get() )
+			{
+				size++;
+			}
+		}
+
+		return size;
+
+	}
+
+
 	public static ArrayList< String > measurementsAsTableRowsStringList(
 			ArrayList< HashMap< Integer,
-					Map< String, Object > > > measurementsTimePointList,
+			Map< String, Object > > > measurementsTimePointList,
 			String delim )
 	{
 

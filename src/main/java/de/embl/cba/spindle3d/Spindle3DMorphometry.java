@@ -4,6 +4,7 @@ import bdv.util.AxisOrder;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvOptions;
 import de.embl.cba.spindle3d.ellipsoids.EllipsoidVectors;
+import de.embl.cba.spindle3d.ellipsoids.Ellipsoids3DImageSuite;
 import de.embl.cba.spindle3d.util.*;
 import ij.CompositeImage;
 import ij.IJ;
@@ -50,7 +51,6 @@ import org.jetbrains.annotations.NotNull;
 import org.scijava.script.ScriptService;
 import java.util.*;
 
-import static de.embl.cba.spindle3d.Spindle3DAlgorithms.*;
 import static de.embl.cba.spindle3d.util.BdvViewer.show;
 import static de.embl.cba.spindle3d.util.Utils.*;
 
@@ -117,7 +117,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		catch ( Exception e )
 		{
 			e.printStackTrace();
-			measurements.log += "Exception during computation: \n" + e.toString();
+			measurements.log += "Exception during computation: \n" + e;
 		}
 
 		measurements.setMeasurementsForExport();
@@ -173,7 +173,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		if ( compositeImage.getBitDepth() == 16 )
 			contrastLimit = 65535;
 
-		final int numChannels = (int) rescaledVolumes.size();
+		final int numChannels = rescaledVolumes.size();
 
 		// Color channels
 		for ( int c = 0; c < numChannels; c++ )
@@ -232,15 +232,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		EllipsoidVectors dnaEllipsoidVectors = fitEllipsoid( initialDnaMask );
 
-//		if ( settings.manualSpindleAxisPositions != null )
-//		{
-//			// replace the automatically computed vector by the manually given
-//			dnaShortestAxisVector = createNormalisedVector( scalingFactorsRawToRescaled, settings.manualSpindleAxisPositions );
-//			// How to handle the center of the DNA?
-//			// How to determine the maximal metaphase plate extends?
-//		}
-
-		rescaledToDnaAlignmentTransform = Spindle3DAlgorithms.createShortestAxisAlignmentTransform( dnaEllipsoidVectors.center, dnaEllipsoidVectors.shortestAxis.getArray() );
+		rescaledToDnaAlignmentTransform = Spindle3DUtils.createShortestAxisAlignmentTransform( dnaEllipsoidVectors.center, dnaEllipsoidVectors.shortestAxis.getArray() );
 
 		transformImages( rescaledToDnaAlignmentTransform );
 
@@ -259,7 +251,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		dnaAlignedSpindleMask = createSpindleMask( dnaAlignedTubulin, measurements.spindleThreshold );
 
 		if ( settings.smoothSpindle )
-			Spindle3DAlgorithms.openFast( dnaAlignedSpindleMask );
+			Spindle3DUtils.openFast( dnaAlignedSpindleMask );
 
 		if ( settings.showIntermediateImages )
 			show( dnaAlignedSpindleMask,
@@ -367,7 +359,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 			scriptRunner.run();
 			RandomAccessibleInterval< UnsignedByteType > mask = ImageJFunctions.wrapByte( scriptRunner.getOutputImp() );
 			return Converters.convert( mask, ( i, o ) ->
-					o.set( i.getRealDouble() > 0.5 ? true : false ), new BitType() );
+					o.set( i.getRealDouble() > 0.5 ), new BitType() );
 		}
 		else
 		{
@@ -713,7 +705,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		{
 			final IntervalView< R > volume = Views.hyperSlice( raiXYCZ, 2, c );
 			final RandomAccessibleInterval< R > rescaledVolume =
-					createRescaledArrayImg(
+					Utils.createRescaledArrayImg(
 							volume,
 							scalingFactorsRawToRescaled );
 			rescaledVolumes.add( rescaledVolume );
@@ -748,7 +740,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		if ( mask != null )
 		{
-			mask = Scalings.createRescaledArrayImg( mask, scalingFactors );
+			mask = Utils.createRescaledArrayImg( mask, scalingFactors );
 			//Viewers.showRai3dWithImageJ( mask, "DNA Threshold Mask" );
 			//Viewers.showRai3dWithImageJ( downscaled, "DNA Threshold" );
 		}
@@ -757,11 +749,11 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		if ( mask != null )
 		{
-			minMaxValues = Spindle3DAlgorithms.getMinMaxValues( downscaled, mask );
+			minMaxValues = Spindle3DUtils.getMinMaxValues( downscaled, mask );
 		}
 		else
 		{
-			minMaxValues = Algorithms.getMinMaxValues( downscaled );
+			minMaxValues = Utils.getMinMaxValues( downscaled );
 		}
 
 		IJ.log( channel + " downscaled minimum value: " + minMaxValues.getA()  );
@@ -779,8 +771,8 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 	private void createInitialDnaMask( RandomAccessibleInterval< R > dna, double dnaThreshold )
 	{
-		RandomAccessibleInterval< BitType > dnaMask = Spindle3DAlgorithms.createMask( dna, dnaThreshold, opService );
-		final int numRemainingRegions = Spindle3DAlgorithms.removeRegionsTouchingImageBorders( dnaMask, 2 );
+		RandomAccessibleInterval< BitType > dnaMask = Spindle3DUtils.createMask( dna, dnaThreshold, opService );
+		final int numRemainingRegions = Spindle3DUtils.removeRegionsTouchingImageBorders( dnaMask, 2 );
 
 		if ( numRemainingRegions == 0 )
 		{
@@ -788,7 +780,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 			return;
 		}
 
-		Regions.onlyKeepLargestRegion( dnaMask, ConnectedComponents.StructuringElement.EIGHT_CONNECTED );
+		Utils.onlyKeepLargestRegion( dnaMask, ConnectedComponents.StructuringElement.EIGHT_CONNECTED );
 
 		if ( settings.showIntermediateImages )
 		{
@@ -862,12 +854,12 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 						settings.voxelSizeForAnalysis );
 
 		final CoordinatesAndValues dnaProfileAlongDnaAxisDerivative =
-				CurveAnalysis.derivative(
+				Utils.derivative(
 						dnaProfileAlongDnaAxis,
 						( int ) Math.ceil( settings.metaphasePlateWidthDerivativeDelta / settings.voxelSizeForAnalysis ) );
 
 		final ArrayList< CoordinateAndValue > dnaAxialBoundaries =
-				CurveAnalysis.leftMaxAndRightMinLoc( dnaProfileAlongDnaAxisDerivative );
+				Utils.leftMaxAndRightMinLoc( dnaProfileAlongDnaAxisDerivative );
 
 		measurements.metaphasePlateWidth =
 				dnaAxialBoundaries.get( 1 ).coordinate -
@@ -941,19 +933,19 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 	private void createDnaMaskAndMeasureDnaVolume( RandomAccessibleInterval< R > dna, Double dnaVolumeThreshold )
 	{
-		dnaAlignedDnaMask = Spindle3DAlgorithms.createMask( dna, dnaVolumeThreshold, opService );
+		dnaAlignedDnaMask = Spindle3DUtils.createMask( dna, dnaVolumeThreshold, opService );
 
-		final int numRemainingRegions = Spindle3DAlgorithms.removeRegionsTouchingImageBorders( dnaAlignedDnaMask, 3 );
+		final int numRemainingRegions = Spindle3DUtils.removeRegionsTouchingImageBorders( dnaAlignedDnaMask, 3 );
 
 		if ( numRemainingRegions == 0 )
 		{
 			throwMeasurementError( "All DNA regions were touching the image border!" );
 		}
 
-		Regions.onlyKeepLargestRegion( dnaAlignedDnaMask, ConnectedComponents.StructuringElement.EIGHT_CONNECTED );
+		Utils.onlyKeepLargestRegion( dnaAlignedDnaMask, ConnectedComponents.StructuringElement.EIGHT_CONNECTED );
 
 		final long dnaVolumeInPixels =
-				Measurements.measureSizeInPixels( dnaAlignedDnaMask );
+				Spindle3DMeasurements.measureSizeInPixels( dnaAlignedDnaMask );
 
 		measurements.chromatinVolume = dnaVolumeInPixels * Math.pow( settings.voxelSizeForAnalysis, 3 );
 
@@ -983,12 +975,12 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		// find the edges seems a bit of an overkill, but then why not.
 		final int derivativeDeltaVoxels = 2;
 		final CoordinatesAndValues tubulinProfileDerivative =
-				CurveAnalysis.derivative(
+				Utils.derivative(
 						binarySpindleProfile,
 						derivativeDeltaVoxels );
 
 		ArrayList< CoordinateAndValue > tubulinExtrema =
-				CurveAnalysis.leftMaxAndRightMinLoc( tubulinProfileDerivative );
+				Utils.leftMaxAndRightMinLoc( tubulinProfileDerivative );
 
 		final ArrayList< double[] > spindlePoles = new ArrayList<>();
 		spindlePoles.add( new double[]{ 0, 0, tubulinExtrema.get( 0 ).coordinate });
@@ -1016,11 +1008,11 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 	private void measureChromatinDilation( ProfileAndRadius dnaLateralProfileAndRadius )
 	{
 		final double dnaLateralRadialProfileMaxIntensity =
-				CurveAnalysis.maximumIndexAndValue( dnaLateralProfileAndRadius.profile ).value;
+				Utils.maximumIndexAndValue( dnaLateralProfileAndRadius.profile ).value;
 
 		final double dnaCenterIntensity = dnaLateralProfileAndRadius.profile.values.get( 0 );
 
-		measurements.chromatinDilation = (1.0 - 1.0 * dnaCenterIntensity / dnaLateralRadialProfileMaxIntensity );
+		measurements.chromatinDilation = (1.0 - dnaCenterIntensity / dnaLateralRadialProfileMaxIntensity );
 	}
 
 	private ArrayList< double[] > refineSpindlePoles(
@@ -1055,7 +1047,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 			blurredTubulinAccess.setPosition( pixelUnitsPolePosition );
 			final Neighborhood< R > blurredTubulinNeighborhood = blurredTubulinAccess.get();
 
-			final RealPoint maximumLocation = Spindle3DAlgorithms.getMaximumLocationWithinMask(
+			final RealPoint maximumLocation = Spindle3DUtils.getMaximumLocationWithinMask(
 					blurredTubulinNeighborhood,
 					dnaAlignedSpindleMask,
 					Utils.as3dDoubleArray( settings.voxelSizeForAnalysis ) );
@@ -1080,18 +1072,18 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 			double spindleThreshold )
 	{
 		final RandomAccessibleInterval< BitType > mask
-				= Algorithms.createMask( tubulin, spindleThreshold );
+				= Utils.createMask( tubulin, spindleThreshold );
 
 		final ImgLabeling< Integer, IntType > imgLabeling
-				= Regions.asImgLabeling( mask, ConnectedComponents.StructuringElement.FOUR_CONNECTED );
+				= Utils.asImgLabeling( mask, ConnectedComponents.StructuringElement.FOUR_CONNECTED );
 
-		final Set< LabelRegion< Integer > > centralRegions = Regions.getCentralRegions(
+		final Set< LabelRegion< Integer > > centralRegions = Utils.getCentralRegions(
 				imgLabeling,
 				new double[]{ 0, 0, 0 },
 				( long ) ( settings.spindleFragmentInclusionZone / settings.voxelSizeForAnalysis ) );
 
 		final RandomAccessibleInterval< BitType > centralRegionsMask =
-				Regions.asMask( centralRegions,
+				Utils.asMask( centralRegions,
 						Intervals.dimensionsAsLongArray( mask ),
 						Intervals.minAsLongArray( mask ));
 
@@ -1267,14 +1259,14 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		// measure
 		final ProfileAndRadius profileAndRadius = new ProfileAndRadius();
-		profileAndRadius.profile = Algorithms.computeRadialProfile( image, center, spacing, maxCenterDistance );
+		profileAndRadius.profile = Utils.computeRadialProfile( image, center, spacing, maxCenterDistance );
 
 		final CoordinatesAndValues radialProfileDerivative =
-				CurveAnalysis.derivative(
+				Utils.derivative(
 						profileAndRadius.profile,
 						(int) Math.ceil( derivativeDelta / settings.voxelSizeForAnalysis ) );
 
-		profileAndRadius.radius = CurveAnalysis.minimum( radialProfileDerivative ).coordinate;
+		profileAndRadius.radius = Utils.minimum( radialProfileDerivative ).coordinate;
 		profileAndRadius.radiusIndex = (int) ( profileAndRadius.radius / spacing );
 
  		if ( settings.showIntermediatePlots )

@@ -364,7 +364,7 @@ public abstract class Spindle3DAlgorithms
 	{
 		RandomAccessibleInterval< BitType > mask
 				= Converters.convert( rai, ( i, o ) ->
-				o.set( i.getRealDouble() > threshold ? true : false ), new BitType() );
+				o.set( i.getRealDouble() > threshold ), new BitType() );
 
 		// "Bug" in Ops requires a Views.zeroMin().
 		mask = opService.morphology().fillHoles( Views.zeroMin( mask ) );

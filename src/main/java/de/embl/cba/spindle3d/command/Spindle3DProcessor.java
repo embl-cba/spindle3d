@@ -144,11 +144,11 @@ public abstract class Spindle3DProcessor
 
 		if ( log.equals( Spindle3DMeasurements.ANALYSIS_FINISHED ))
 		{
-			if ( this.settings.showOutputImage == true || saveResults )
+			if ( this.settings.showOutputImage || saveResults )
 			{
 				final CompositeImage outputImage = morphometry.createOutputImage( 36, 0.5 );
 
-				if ( this.settings.showOutputImage == true )
+				if ( this.settings.showOutputImage )
 					outputImage.show();
 
 				if ( saveResults )
@@ -199,7 +199,7 @@ public abstract class Spindle3DProcessor
 		if ( new File( cellMaskPath ).exists() )
 		{
 			final RandomAccessibleInterval< RealType > rai = ImageJFunctions.wrapReal( Utils.openWithBioFormats( cellMaskPath ) );
-			RandomAccessibleInterval< BitType > cellMask = Converters.convert( rai, ( i, o ) -> o.set( i.getRealDouble() > 0.5 ? true : false ), new BitType() );
+			RandomAccessibleInterval< BitType > cellMask = Converters.convert( rai, ( i, o ) -> o.set( i.getRealDouble() > 0.5 ), new BitType() );
 			IJ.log( "Found cell mask file: " + cellMaskPath );
 			return cellMask;
 		}
