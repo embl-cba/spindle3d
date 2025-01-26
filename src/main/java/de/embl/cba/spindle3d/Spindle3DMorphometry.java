@@ -232,7 +232,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		EllipsoidVectors dnaEllipsoidVectors = fitEllipsoid( initialDnaMask );
 
-		rescaledToDnaAlignmentTransform = Spindle3DUtils.createShortestAxisAlignmentTransform( dnaEllipsoidVectors.center, dnaEllipsoidVectors.shortestAxis.getArray() );
+		rescaledToDnaAlignmentTransform = createShortestAxisAlignmentTransform( dnaEllipsoidVectors.center, dnaEllipsoidVectors.shortestAxis.getArray() );
 
 		transformImages( rescaledToDnaAlignmentTransform );
 
@@ -251,7 +251,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		dnaAlignedSpindleMask = createSpindleMask( dnaAlignedTubulin, measurements.spindleThreshold );
 
 		if ( settings.smoothSpindle )
-			Spindle3DUtils.openFast( dnaAlignedSpindleMask );
+			openFast( dnaAlignedSpindleMask );
 
 		if ( settings.showIntermediateImages )
 			show( dnaAlignedSpindleMask,
@@ -749,7 +749,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		if ( mask != null )
 		{
-			minMaxValues = Spindle3DUtils.getMinMaxValues( downscaled, mask );
+			minMaxValues = getMinMaxValues( downscaled, mask );
 		}
 		else
 		{
@@ -771,8 +771,8 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 	private void createInitialDnaMask( RandomAccessibleInterval< R > dna, double dnaThreshold )
 	{
-		RandomAccessibleInterval< BitType > dnaMask = Spindle3DUtils.createMask( dna, dnaThreshold, opService );
-		final int numRemainingRegions = Spindle3DUtils.removeRegionsTouchingImageBorders( dnaMask, 2 );
+		RandomAccessibleInterval< BitType > dnaMask = createMask( dna, dnaThreshold, opService );
+		final int numRemainingRegions = removeRegionsTouchingImageBorders( dnaMask, 2 );
 
 		if ( numRemainingRegions == 0 )
 		{
@@ -822,7 +822,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 	private static < T extends NumericType< T > & NativeType< T > > RandomAccessibleInterval transformImage( AffineTransform3D transform3D, RandomAccessibleInterval< T > image )
 	{
-		return copyAsArrayImg( Utils.createTransformedView( image, transform3D, new NearestNeighborInterpolatorFactory(), Utils.BorderExtension.ExtendBorder ) );
+		return copyAsArrayImg( createTransformedView( image, transform3D, new NearestNeighborInterpolatorFactory(), Utils.BorderExtension.ExtendBorder ) );
 	}
 
 	private EllipsoidVectors fitEllipsoid( RandomAccessibleInterval< BitType > mask )
@@ -933,9 +933,9 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 	private void createDnaMaskAndMeasureDnaVolume( RandomAccessibleInterval< R > dna, Double dnaVolumeThreshold )
 	{
-		dnaAlignedDnaMask = Spindle3DUtils.createMask( dna, dnaVolumeThreshold, opService );
+		dnaAlignedDnaMask = createMask( dna, dnaVolumeThreshold, opService );
 
-		final int numRemainingRegions = Spindle3DUtils.removeRegionsTouchingImageBorders( dnaAlignedDnaMask, 3 );
+		final int numRemainingRegions = removeRegionsTouchingImageBorders( dnaAlignedDnaMask, 3 );
 
 		if ( numRemainingRegions == 0 )
 		{
@@ -1047,7 +1047,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 			blurredTubulinAccess.setPosition( pixelUnitsPolePosition );
 			final Neighborhood< R > blurredTubulinNeighborhood = blurredTubulinAccess.get();
 
-			final RealPoint maximumLocation = Spindle3DUtils.getMaximumLocationWithinMask(
+			final RealPoint maximumLocation = getMaximumLocationWithinMask(
 					blurredTubulinNeighborhood,
 					dnaAlignedSpindleMask,
 					Utils.as3dDoubleArray( settings.voxelSizeForAnalysis ) );
@@ -1210,7 +1210,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		// compute rotation vector
 		// note: we do not know in which direction of the spindle the spindleAxis vector points,
 		// but we think it does not matter for alignment to the x-axis
-		final double angleBetweenXAxisAndSpindleWithVector = angleOfSpindleAxisToXAxisInRadians( spindleAxis );
+		final double angleBetweenXAxisAndSpindleWithVector = angleToXAxisInRadians( spindleAxis );
 
 		AffineTransform3D rotationTransform = new AffineTransform3D();
 		rotationTransform.rotate( Spindle3DMeasurements.ALIGNED_DNA_AXIS, angleBetweenXAxisAndSpindleWithVector );
