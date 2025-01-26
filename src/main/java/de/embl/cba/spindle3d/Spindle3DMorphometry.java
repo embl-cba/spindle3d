@@ -424,7 +424,9 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 	private double measureVolume( RandomAccessibleInterval< BitType > mask )
 	{
-		return measureSizeInPixels( mask ) * Math.pow( settings.voxelSizeForAnalysis, 3 );
+		long sizeInPixels = measureSizeInPixels( mask );
+		double scale = Math.pow( settings.voxelSizeForAnalysis, 3 );
+		return sizeInPixels * scale;
 	}
 
 	private double measureSpindleThreshold(
