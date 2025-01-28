@@ -270,6 +270,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 
 		measurements.spindleVolume = measureVolume( spindleAlignedSpindleMask );
 
+
 		if ( spindleAlignedCellMask != null )
 		{
 			measurements.cellVolume = measureVolume( spindleAlignedCellMask );
@@ -755,7 +756,7 @@ public class Spindle3DMorphometry< R extends RealType< R > & NativeType< R > >
 		}
 		else
 		{
-			minMaxValues = Utils.getMinMaxValues( downscaled );
+			minMaxValues = getMinMaxValues( downscaled );
 		}
 
 		IJ.log( channel + " downscaled minimum value: " + minMaxValues.getA()  );

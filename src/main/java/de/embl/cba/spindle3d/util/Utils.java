@@ -139,7 +139,7 @@ public class Utils
 	public static < T extends RealType< T > & NativeType< T > >
 	void removeRegion( RandomAccessibleInterval< T > img, LabelRegion labelRegion )
 	{
-		final Cursor regionCursor = labelRegion.cursor();
+		final Cursor regionCursor = labelRegion.inside().cursor();
 		final RandomAccess< T > access = img.randomAccess();
 		while ( regionCursor.hasNext() )
 		{
@@ -573,7 +573,7 @@ public class Utils
 
 		for ( LabelRegion region : regions )
 		{
-			final Cursor< Void > regionCursor = region.cursor();
+			final Cursor< Void > regionCursor = region.inside().cursor();
 			while ( regionCursor.hasNext() )
 			{
 				regionCursor.fwd();
