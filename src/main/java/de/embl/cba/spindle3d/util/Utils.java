@@ -754,7 +754,7 @@ public class Utils
 
 		for ( LabelRegion labelRegion : labelRegions )
 		{
-			regionsAndSizes.add( new RegionAndSize( labelRegion, labelRegion.size() ) );
+			regionsAndSizes.add( new RegionAndSize( labelRegion, labelRegion.inside().size() ) );
 		}
 
 		Collections.sort( regionsAndSizes );
