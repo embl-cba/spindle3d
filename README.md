@@ -18,10 +18,10 @@ Please make sure that your input image is calibrated, i.e. the xy-length of your
 No other preprocessing is required. 
 
 Optional: Cell volume mask
-Spindle3D will look for an additional file called [Name of input image] + ”_CellMask.tif” in the same folder as the input image. The binary image should contain the mask of the cell in question and should have the same dimensions and calibration as the input image. If provided, only the voxels within the cell mask will be used for the analysis.
+Spindle3D will look for an additional file called [Name of input image] + ”_CellMask.tif” in the same folder as the input image. The binary image should contain the mask of the cell in question and should have the same dimensions and calibration as the input image. If provided, only the voxels within the cell mask will be used for the analysis. Note: only works with input files in .tif format ([Process > Batch > Convert]).
 
 Disclaimer: As spindle and chromatin morphology can be very variable in different systems, we cannot guarantee that our analysis works for every spindle type or data set. Please feel encouraged to share your experiences with us!
-Spindles tested so far: HeLa Kyoto, HEK293, mouse embryonic stem cells, Ptk2, Bovine 1-cell and 2-cell embryos, mouse oocytes, Xenopus laevis egg extract
+Spindles tested so far: HeLa Kyoto, HEK293, mouse embryonic stem cells, Ptk2, Indian muntjac and Chinese muntjac fibroblasts, human brain organoids, Bovine 1-cell and 2-cell embryos, mouse oocytes, Xenopus laevis egg extract
 
 We recommend verifying your analysis using the Spindle3D output images (see section "Output images").
 
