@@ -30,7 +30,7 @@ We recommend verifying your analysis using the Spindle3D output images (see sect
 Please note that we are making certain assumptions about the rough size of the structures in the spindle. 
 If those are not met, the analysis will fail. 
 
-Roughly speaking, our analysis pipeline was tested to work with spindles where the pole-to-pole distance is between 10 and 20 micrometer. And where the DNA metaphase plate has similar dimensions. If your data is vastly different from that, please contact us. 
+Roughly speaking, our analysis pipeline was tested to work with spindles where the pole-to-pole distance is between 5 and 20 micrometer. And where the DNA metaphase plate has similar dimensions. If your data is vastly different from that, please contact us. 
 
 For example, we recently had a use-case with expansion microscopy where everything was off by a factor of four. So there it was important to set the voxel sizes in the image to the size without expansion for the plugin to work.
 
