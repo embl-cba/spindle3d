@@ -25,6 +25,15 @@ Spindles tested so far: HeLa Kyoto, HEK293, mouse embryonic stem cells, Ptk2, In
 
 We recommend verifying your analysis using the Spindle3D output images (see section "Output images").
 
+### Approximate sizes of important parameters
+
+Please note that we are making certain assumptions about the rough size of the structures in the spindle. 
+If those are not met, the analysis will fail. 
+
+Roughly speaking, our analysis pipeline was tested to work with spindles where the pole-to-pole distance is between 10 and 20 micrometer. And where the DNA metaphase plate has similar dimensions. If your data is vastly different from that, please contact us. 
+
+For example, we recently had a use-case with expansion microscopy where everything was off by a factor of four. So there it was important to set the voxel sizes in the image to the size without expansion for the plugin to work.
+
 ## Publication
 
 To cite this plugin and for a detailed documentation of the image analysis procedures, please use the following publication:
